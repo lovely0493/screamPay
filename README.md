@@ -200,7 +200,8 @@ redisson:
 
 QQ : 254939589
 
-微信：![微信](http://star.agcde.xyz/wp-content/uploads/2018/12/个人二维码.jpeg  "龚丁禧个人微信")
+微信：
+![微信](http://star.agcde.xyz/wp-content/uploads/2018/12/个人二维码.jpeg  "龚丁禧个人微信")
 
 
 手机：18750261781
