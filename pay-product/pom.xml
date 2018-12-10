@@ -249,6 +249,7 @@
 			<artifactId>tess4j</artifactId>
 			<version>3.2.1</version>
 		</dependency>
+		<!--  
 		<dependency>
 			<groupId>com.kspay.cert</groupId>
 			<artifactId>CerVerify</artifactId>
@@ -264,6 +265,7 @@
 			<artifactId>sandutil</artifactId>
 			<version>0.0.1</version>
 		</dependency>
+		-->
 		<dependency>
 	    	<groupId>com.netflix.archaius</groupId>
 	    	<artifactId>archaius-core</artifactId>
