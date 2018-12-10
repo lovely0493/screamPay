@@ -176,6 +176,7 @@ redisson:
   #master-name: mymaster
   #sentinel-addresses: redis://192.168.1.188:26379,redis://192.168.1.188:26479,redis://192.168.1.188:26579
 ```
+4.后台默认登录账户／密码为：admin/123456
 	
 
 
