@@ -11,8 +11,7 @@ class WebConfigurer extends WebMvcConfigurerAdapter {
 	
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/files/**").addResourceLocations("file:///" + RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath),
-				"file:///" + RedisUtil.getSysConfigValue(CfgKeyConst.qr_money_path));
+		registry.addResourceHandler("/files/**").addResourceLocations("file:" + RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath));
 	}
 
 }

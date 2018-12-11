@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.qh.common.config.QhPayConfig;
+import com.qh.common.config.CfgKeyConst;
 import com.qh.common.domain.FileDO;
 import com.qh.common.service.FileService;
 import com.qh.common.utils.FileType;
@@ -41,9 +41,6 @@ public class FileController extends BaseController {
 
 	@Autowired
 	private FileService sysFileService;
-
-	@Autowired
-	private QhPayConfig qhPayConfig;
 
 	@GetMapping()
 	@RequiresPermissions("common:sysFile:sysFile")
@@ -121,7 +118,7 @@ public class FileController extends BaseController {
 		if ("test".equals(getUsername())) {
 			return R.error(1, "演示系统不允许修改,完整体验请部署程序");
 		}
-		String fileName = qhPayConfig.getUploadPath() + sysFileService.get(id).getUrl().replace("/files/", "");
+		String fileName = RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath) + sysFileService.get(id).getUrl().replace("/files/", "");
 		if (sysFileService.remove(id) > 0) {
 			boolean b = FileUtil.deleteFile(fileName);
 			if (!b) {
@@ -154,7 +151,7 @@ public class FileController extends BaseController {
 		fileName = FileUtil.renameToUUID(fileName);
 		FileDO sysFile = new FileDO(FileType.fileType(fileName), "/files/" + fileName, new Date());
 		try {
-			FileUtil.uploadFile(file.getBytes(), qhPayConfig.getUploadPath(), fileName);
+			FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath), fileName);
 		} catch (Exception e) {
 			return R.error();
 		}
@@ -170,7 +167,7 @@ public class FileController extends BaseController {
 		String fileName = file.getOriginalFilename();
 		FileDO sysFile = new FileDO(FileType.fileType(fileName), "/files/" + fileName, new Date());
 		try {
-			FileUtil.uploadFile(file.getBytes(), qhPayConfig.getUploadPath(), fileName);
+			FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath), fileName);
 		} catch (Exception e) {
 			return R.error();
 		}
@@ -198,7 +195,7 @@ public class FileController extends BaseController {
 		fileName = FileUtil.renameToUUID(fileName);
 		FileDO sysFile = new FileDO(FileType.fileType(fileName), "/files/" + fileName, new Date());
 		try {
-			FileUtil.uploadFile(file.getBytes(), qhPayConfig.getUploadPath(), fileName);
+			FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath), fileName);
 		} catch (Exception e) {
 			return R.error();
 		}

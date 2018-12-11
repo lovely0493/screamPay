@@ -1,7 +1,3 @@
-qhpay:
-  publicKey: MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCMlNqJh3JG6shlMJ0OJ42QnuG9OVUiBlcpbUXbaaprUjF1XTqDaUJZLvk5fkRDAgZAC/CbyYOOoZBpp8y3CnnCSPtJ8oKoLuQOcN1hW4snE0VP+J2wKMQQyjmzFK4MiRRDE6oxD2nWFe517zl8IOJYZWK3egTIXezoidLG0bucZwIDAQAB
-  privateKeyPath: D:/var/key/privateKey.txt
-  uploadPath: D:/var/uploaded_files/
 logging:
   level:
     com.qh: debug
