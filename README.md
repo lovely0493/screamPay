@@ -169,7 +169,7 @@ spring:
       queueCapacity: 100  
       threadNamePrefix: myThreadPool 
 redisson:
-  password: 
+  password: redis
   # 单机模式
   address: redis://127.0.0.1:6379
   # 哨兵模式
@@ -177,7 +177,10 @@ redisson:
   #sentinel-addresses: redis://192.168.1.188:26379,redis://192.168.1.188:26479,redis://192.168.1.188:26579
 ```
 4.后台默认登录账户／密码为：admin/123456
+
+5.application-dev.yml和application-pro.yml配置文件里是设置了redis密码的，注意要和自己的redis保持一致。
 	
+6.logback.xml指定了日志输出目录，有问题可以查看日志。
 
 
 作者已成功将项目部署在阿里云主机上，服务器配置为：

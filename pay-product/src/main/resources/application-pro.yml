@@ -75,7 +75,7 @@ spring:
       queueCapacity: 100  
       threadNamePrefix: myThreadPool 
 redisson:
-  password: 
+  password: redis
   # 单机模式
   address: redis://127.0.0.1:6379
   # 哨兵模式
