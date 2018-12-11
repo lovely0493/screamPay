@@ -294,15 +294,13 @@ public class BoPayRSAUtils {
     }
 
     //解码返回byte
-    @SuppressWarnings("restriction")
     public static byte[] decryptBASE64(String key) throws Exception {
-        return (new sun.misc.BASE64Decoder()).decodeBuffer(key);
+        return java.util.Base64.getDecoder().decode(key);
     }
 
     //编码返回字符串
-    @SuppressWarnings("restriction")
     public static String encryptBASE64(byte[] key) throws Exception {
-        return (new sun.misc.BASE64Encoder()).encodeBuffer(key);
+        return java.util.Base64.getEncoder().encodeToString(key);
     }
 
     //map对象中存放公私钥

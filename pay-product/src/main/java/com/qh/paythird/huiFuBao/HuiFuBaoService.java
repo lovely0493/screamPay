@@ -3,7 +3,6 @@ package com.qh.paythird.huiFuBao;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,17 +27,6 @@ import com.qh.paythird.huiFuBao.utils.HuifubaoConst;
 import com.qh.paythird.huiFuBao.utils.SmallTools;
 import com.qh.paythird.huiFuBao.utils.XmlUtils;
 import com.qh.redis.service.RedisUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import sun.misc.BASE64Encoder;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * 汇付宝
@@ -696,7 +684,7 @@ public class HuiFuBaoService {
 			String goods_num = "1";
 
 			//meta_option参数先Base64加密，再URLencode
-			meta_option = URLEncoder.encode(new BASE64Encoder().encode(meta_option.getBytes("gb2312")),"UTF-8");
+			meta_option = URLEncoder.encode(java.util.Base64.getEncoder().encodeToString(meta_option.getBytes("gb2312")), "UTF-8");
 			String sign1 = "version="+version+
 					"&agent_id="+agent_id+
 					"&agent_bill_id="+agent_bill_id+
