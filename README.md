@@ -87,13 +87,6 @@ V1.0.0 |2018-12-08 |首次发布
 ```
 3.application-dev.yml为开发配置。
 ```html
-qhpay:
-  #平台RSA公钥，现在配置文件里的已经作废，从后台"系统参数配置"设置。
-  publicKey: MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCMlNqJh3JG6shlMJ0OJ42QnuG9OVUiBlcpbUXbaaprUjF1XTqDaUJZLvk5fkRDAgZAC/CbyYOOoZBpp8y3CnnCSPtJ8oKoLuQOcN1hW4snE0VP+J2wKMQQyjmzFK4MiRRDE6oxD2nWFe517zl8IOJYZWK3egTIXezoidLG0bucZwIDAQAB
-  #平台私钥，现在配置文件里的已经作废，从后台"系统参数配置"设置。
-  privateKeyPath: D:/var/key/privateKey.txt
-  #文件上传路径，优先使用后台“系统参数配置”设置进去的参数。
-  uploadPath: D:/var/uploaded_files/
 #log等级
 logging:
   level:
