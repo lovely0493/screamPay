@@ -15,6 +15,7 @@ Thumbs.db
 build/
 target/
 bin/
+logs/
 dependency-reduced-pom.xml
 *.class
 
@@ -30,3 +31,4 @@ dependency-reduced-pom.xml
 *.ipr
 *.iws
 *.idea
+*.log

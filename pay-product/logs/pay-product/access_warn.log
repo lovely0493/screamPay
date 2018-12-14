@@ -1,2 +1,0 @@
-2018-12-11 20:23:03 40434 [qtp1941390869-86] WARN 
-				n.s.e.config.CacheConfiguration - Cache 'loginSalt' is set to eternal but also has TTI/TTL set.  To avoid this warning, clean up the config removing conflicting values of eternal, TTI and TTL. Effective configuration for Cache 'loginSalt' will be eternal='true', timeToIdleSeconds='0', timeToLiveSeconds='0'.
