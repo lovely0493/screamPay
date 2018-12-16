@@ -63,7 +63,6 @@ public class PayQrController {
     /**
      * 
      * @Description 人工充值
-     * @param context
      * @param model
      * @return
      */
@@ -79,8 +78,7 @@ public class PayQrController {
     /**
      * 
      * @Description 人工充值
-     * @param context
-     * @param model
+     * @param monAmount
      * @return
      */
     @RequiresPermissions("super")
@@ -96,7 +94,6 @@ public class PayQrController {
         if(R.ifError(r)){
             return r;
         }
-    	
     	//业务逻辑处理
     	return payQrService.superChargeQr(merchNo, OutChannel.man.name(), monAmount, 
         		DateUtil.getCurrentTimeInt() + "-" + new BigDecimal(monAmount).intValue() + "-" + ParamUtil.generateCode2());
@@ -117,7 +114,6 @@ public class PayQrController {
     /**
      * 
      * @Description 对内授权
-     * @param context
      * @param model
      * @return
      */
@@ -180,7 +176,9 @@ public class PayQrController {
         Set<Integer> monIntSet;
         for (String oChannel : OutChannel.jfDesc().keySet()) {
         	//资金账号的充值金额
-        	payQrConfigDO = payQrConfigService.get(oChannel, RedisUtil.getPayFoundBal().getUsername());
+            // ToDO
+            String accountNo = null;
+        	payQrConfigDO = payQrConfigService.get(oChannel, RedisUtil.getPayFoundBal().getUsername(),accountNo);
         	if(payQrConfigDO == null || payQrConfigDO.getQrs() == null || payQrConfigDO.getQrs().isEmpty()){
         		continue;
         	}
@@ -215,32 +213,29 @@ public class PayQrController {
 			logger.error("参数错误：monAmount-{},merchNo-{},outChannel-{}", monAmount,merchNo,outChannel);
 			return R.error("请检查参数");
 		}
+
 		return payQrService.getChargeMon(monAmount,merchNo,outChannel);
 	}
 
 
     /**
-     * @param request
+     * @param context
      * @return
      * @Description 支付通道扫码界面跳转
      */
     @GetMapping("/qr")
     public String qr(@RequestParam(PayConstants.web_context) String context, Model model) {
-        logger.info(PayConstants.web_context + context);
+        logger.info(PayConstants.web_context + ":" + context);
         if (ParamUtil.isNotEmpty(context)) {
-            try {
-                context = new String(RSAUtil.decryptByPrivateKey(Base64Utils.decode(context), QhPayUtil.getQhPrivateKey()));
-            } catch (Exception e) {
-                model.addAttribute(Constant.result_msg, "解密异常！");
-                return PayConstants.url_pay_error;
-            }
-            JSONObject jo = JSONObject.parseObject(context);
-            String merchNo = jo.getString(OrderParamKey.merchNo.name());
-            String orderNo = jo.getString(OrderParamKey.orderNo.name());
-            if (ParamUtil.isEmpty(merchNo) || ParamUtil.isEmpty(orderNo)) {
-                model.addAttribute(Constant.result_msg, "订单号或者商户号为空！");
-                return PayConstants.url_pay_error;
-            }
+			try {
+				context = new String(
+						RSAUtil.decryptByPrivateKey(Base64Utils.decode(context), QhPayUtil.getQhPrivateKey()));
+			} catch (Exception e) {
+				model.addAttribute(Constant.result_msg, "解密异常！");
+			}
+			JSONObject jo = JSONObject.parseObject(context);
+			String merchNo = jo.getString(OrderParamKey.merchNo.name());
+			String orderNo = jo.getString(OrderParamKey.orderNo.name());
             Order order = RedisUtil.getOrder(merchNo, orderNo);
             if (order == null) {
                 model.addAttribute(Constant.result_msg, "支付扫码订单不存在");
@@ -252,19 +247,19 @@ public class PayQrController {
             model.addAttribute("outChannel", order.getOutChannel());
             model.addAttribute("outChannelDesc", OutChannel.jfDesc());
             model.addAttribute("company", order.getPayCompany());
-            int remainSec = RedisUtil.getMonAmountOccupyValidTime(merchNo, order.getOutChannel(), order.getRealAmount().toPlainString());
+            int remainSec = RedisUtil.getMonAmountOccupyValidTime(merchNo, order.getOutChannel(), order.getPayMerch(),order.getRealAmount().toPlainString());
             model.addAttribute("returnUrl", order.getReturnUrl());
             if (remainSec <= 0) {
                 remainSec = 0;
                 model.addAttribute("msg", "订单已经过期");
             } else {
-            	PayQrConfigDO payQrConfigDo =  payQrConfigService.get(order.getOutChannel(), merchNo);
+            	PayQrConfigDO payQrConfigDo =  payQrConfigService.get(order.getOutChannel(), merchNo,order.getPayMerch());
             	String amount =order.getRealAmount().toPlainString();
             	if(payQrConfigDo != null && payQrConfigDo.getQrs().containsKey(amount)){
-            		model.addAttribute("qr_url", "/files/" + merchNo + "/" + order.getOutChannel() + "/" + amount.replace(".", "p") + ".jpg?r=" + ParamUtil.generateCode6());
+            		model.addAttribute("qr_url", "/files/" + merchNo + "/" + order.getOutChannel() + "/" + order.getPayMerch() + "/" + amount.replace(".", "p") + ".jpg?r=" + DateUtil.getCurrentTimeInt());
             		model.addAttribute(PayConstants.qr_any_money_flag, YesNoType.not.id());
             	}else{
-            		model.addAttribute("qr_url", "/files/" + merchNo + "/" + order.getOutChannel() + "/0.jpg?r=" + ParamUtil.generateCode6());
+            		model.addAttribute("qr_url", "/files/" + merchNo + "/" + order.getOutChannel() + "/" + order.getPayMerch() + "/0.jpg?r=" + DateUtil.getCurrentTimeInt());
             		model.addAttribute(PayConstants.qr_any_money_flag, YesNoType.yes.id());
             	}
             	
@@ -278,15 +273,15 @@ public class PayQrController {
 
 
     /**
-     * @param merchNo
      * @param outChannel
+     * @param accountNo
      * @param request
      * @return
      * @Description 扫码通道充值后台通知
      */
-    @PostMapping("/qr/charge/notify/{outChannel}")
+    @PostMapping("/qr/charge/notify/{outChannel}/{accountNo}")
     @ResponseBody
-    public JSONObject notifyChargeQr(@PathVariable("outChannel") String outChannel, HttpServletRequest request) {
+    public JSONObject notifyChargeQr(@PathVariable("outChannel") String outChannel,@PathVariable("accountNo") String accountNo, HttpServletRequest request) {
         logger.info("扫码通道充值后台通知：{}", outChannel);
         try {
 			logger.info("充值扫码通道后台通知参数：{}", RequestUtils.getRequestParam(request).toString());
@@ -301,18 +296,19 @@ public class PayQrController {
         String merchNo = RedisUtil.getPayFoundBal().getUsername();
         String todo = request.getParameter("todo");
         if ("timePost".equals(todo)) {
-            return syncCheck(merchNo,outChannel,request);
+            return syncCheck(merchNo,outChannel,accountNo,request);
         }else if("up".equals(todo)){
             //回调验签
-            if (verifySign(merchNo, outChannel, request)) {
+            if (verifySign(merchNo, outChannel, accountNo,request)) {
                 //业务逻辑处理
             	String msg = null;
 				try {
+                    syncCheck(merchNo,outChannel,accountNo,request);
 					msg = URLDecoder.decode( request.getParameter("time"),"UTF-8") + URLDecoder.decode( request.getParameter("username"),"UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					logger.error("参数解码失败，{}，{}","time","username");
 				}
-                payQrService.notifyChargeQr(merchNo, outChannel, monAmount, businessNo, msg);
+                payQrService.notifyChargeQr(merchNo, outChannel, accountNo,monAmount, businessNo, msg);
             }
         }
         return null;
@@ -325,10 +321,10 @@ public class PayQrController {
      * @return
      * @Description 扫码通道支付后台通知
      */
-    @PostMapping("/qr/notify/{merchNo}/{outChannel}")
+    @PostMapping("/qr/notify/{merchNo}/{outChannel}/{accountNo}")
     @ResponseBody
     public JSONObject notifyQr(@PathVariable("merchNo") String merchNo, @PathVariable("outChannel") String outChannel,
-    		HttpServletRequest request) {
+            @PathVariable("accountNo") String accountNo,HttpServletRequest request) {
         logger.info("扫码通道支付后台通知：{},{}", merchNo, outChannel);
         try {
 			logger.info("支付扫码通道后台通知参数：{}", RequestUtils.getRequestParam(request).toString());
@@ -341,18 +337,19 @@ public class PayQrController {
         /**   心跳/支付回调 标记  心跳:timePost   支付回调:up    **/
         String todo = request.getParameter("todo");
         if ("timePost".equals(todo)) {
-            return syncCheck(merchNo,outChannel,request);
+            return syncCheck(merchNo,outChannel,accountNo,request);
         }else if("up".equals(todo)){
             //回调验签
-            if (verifySign(merchNo, outChannel, request)) {
+            if (verifySign(merchNo, outChannel, accountNo,request)) {
                 //业务逻辑处理
             	String msg = null;
 				try {
+                    syncCheck(merchNo,outChannel,accountNo,request);
 					msg = URLDecoder.decode( request.getParameter("time"),"UTF-8") + URLDecoder.decode( request.getParameter("username"),"UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					logger.error("参数解码失败，{}，{}","time","username");
 				}
-                payQrService.notifyQr(merchNo, outChannel, monAmount, businessNo, msg);
+                payQrService.notifyQr(merchNo, outChannel, accountNo,monAmount, businessNo, msg);
             }else{
             	logger.error("支付扫码通道后台通知 验签不通过");
             }
@@ -362,7 +359,7 @@ public class PayQrController {
 
     
     
-    private JSONObject syncCheck(String merchNo,String outChannel,HttpServletRequest request) {
+    private JSONObject syncCheck(String merchNo,String outChannel,String accountNo,HttpServletRequest request) {
         String v = request.getParameter("v");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
         Date date = new Date();
@@ -371,33 +368,35 @@ public class PayQrController {
         jsonObj.put("msg", "timepost do nothing");
         jsonObj.put("T", sdf.format(date));
         jsonObj.put("V", v);
-        RedisUtil.setQrGatewayLastSyncTime(merchNo,outChannel,date.getTime());
+        RedisUtil.setQrGatewayLastSyncTime(merchNo,outChannel,accountNo,date.getTime());
+        logger.info(""+merchNo + "    " + outChannel + "     "+ accountNo);
+        logger.info(""+RedisUtil.getQrGatewayLastSyncTime(merchNo, outChannel,accountNo));
         return jsonObj;
     }
 
     /**
      * @param merchNo
-     * @param outChanel
+     * @param outChannel
      * @param request
      * @return
      * @Description 验签
      */
-    private boolean verifySign(String merchNo, String outChanel, HttpServletRequest request) {
+    private boolean verifySign(String merchNo, String outChannel,String accountNo, HttpServletRequest request) {
     	try {
-			PayQrConfigDO payQrConfigDO = payQrConfigService.get(outChanel, merchNo);//"4faf5ac89fe24e7dbf64dfa50c2fed7f";//根据商户号获取
+			PayQrConfigDO payQrConfigDO = payQrConfigService.get(outChannel, merchNo,accountNo);//"4faf5ac89fe24e7dbf64dfa50c2fed7f";//根据商户号获取
 			if (payQrConfigDO == null) {
-				logger.error("没有对应的APIKEY({},{})",merchNo,outChanel);
+				logger.error("没有对应的APIKEY({},{})",merchNo,outChannel);
 				return false;
 			}
 			String apiKey = payQrConfigDO.getApiKey();
 			if (StringUtils.isBlank(apiKey)) {
-				logger.error("APIKEY为空({},{})",merchNo,outChanel);
+				logger.error("APIKEY为空({},{})",merchNo,outChannel);
 				return false;
 			}
 			TreeMap<String, String> params = RequestUtils.getRequestParam(request);
 			String tradeNo = params.get("tradeNo");
 			String status = params.get("status");
-			if(outChanel.equals(OutChannel.jfali.name())){
+			if(outChannel.equals(OutChannel.jfali.name())){
                 tradeNo = URLDecoder.decode(tradeNo,"UTF-8");
                 status = URLDecoder.decode(params.get("status"),"UTF-8");
             }
@@ -407,8 +406,10 @@ public class PayQrController {
 			String sig = params.get("sig");
 			String sign = Md5Util.MD5(str);
 			logger.info("原签名："+sig+"；现签名："+sign);
-			if(sign.equalsIgnoreCase(sig))
-				return true;
+			if(sign.equalsIgnoreCase(sig)){
+                RedisUtil.setQrGatewayLastSyncTime(merchNo,outChannel,accountNo,new Date().getTime());
+                return true;
+            }
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}

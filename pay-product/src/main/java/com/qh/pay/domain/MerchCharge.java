@@ -19,6 +19,8 @@ public class MerchCharge implements Serializable{
 	private BigDecimal amount;
 	/***业务号******/
 	private String businessNo;
+	/***支付账号*****/
+	private String accountNo;
 	/***订单状态****/
 	private Integer orderState;
 	/***清算状态***/
@@ -84,6 +86,12 @@ public class MerchCharge implements Serializable{
 	}
 	public void setMsg(String msg) {
 		this.msg = msg;
+	}
+	public String getAccountNo() {
+		return accountNo;
+	}
+	public void setAccountNo(String accountNo) {
+		this.accountNo = accountNo;
 	}
 	
 }

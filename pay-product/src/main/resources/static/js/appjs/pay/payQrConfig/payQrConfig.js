@@ -87,7 +87,7 @@ function load() {
 					title : '收款二维码图片' ,
 					formatter : function(value, row, index) {
 						var e = '<a class="btn btn-primary btn-sm '+s_upload_h+'" href="#" mce_href="#" title="上传收款码" onclick="editQrs(\''
-								 	+ row.outChannel + '\',\'' + row.merchNo
+								 	+ row.outChannel + '\',\'' + row.merchNo + '\',\'' + row.accountNo
 								+ '\')"><i class="fa fa-folder-open"></i></a> ';
 						return e
 					}
@@ -98,10 +98,10 @@ function load() {
 					align : 'center',
 					formatter : function(value, row, index) {
 						var e = '<a class="btn btn-primary btn-sm '+s_edit_h+'" href="#" mce_href="#" title="编辑" onclick="edit(\''
-								 	+ row.outChannel + '\',\'' + row.merchNo
+								 	+ row.outChannel + '\',\'' + row.merchNo + '\',\'' + row.accountNo
 								+ '\')"><i class="fa fa-edit"></i></a> ';
 						var d = '<a class="btn btn-warning btn-sm '+s_remove_h+'" href="#" title="删除"  mce_href="#" onclick="remove(\''
-									+ row.outChannel + '\',\'' + row.merchNo
+									+ row.outChannel + '\',\'' + row.merchNo + '\',\'' + row.accountNo
 								+ '\')"><i class="fa fa-remove"></i></a> ';
 						return e + d ;
 					}
@@ -122,7 +122,7 @@ function add() {
 	});
 }
 
-function editQrs(outChannel,merchNo) {
+function editQrs(outChannel,merchNo,accountNo) {
 	var index = layer.open({
 		type : 2,
 		title : '编辑扫码图片',
@@ -130,23 +130,23 @@ function editQrs(outChannel,merchNo) {
 		shadeClose : false, // 点击遮罩关闭层
 		area : [ '800px', '550px' ],
 		maxmin: true,
-		content : prefix + '/editQrs/' + outChannel + "/" + merchNo // iframe的url
+		content : prefix + '/editQrs/' + outChannel + "/" + merchNo + "/" + accountNo // iframe的url
 	});
 	layer.full(index);
 }
 
 
-function edit(outChannel,merchNo) {
+function edit(outChannel,merchNo,accountNo) {
 	layer.open({
 		type : 2,
 		title : '编辑',
 		maxmin : true,
 		shadeClose : false, // 点击遮罩关闭层
 		area : [ '800px', '550px' ],
-		content : prefix + '/edit/' + outChannel + "/" + merchNo // iframe的url
+		content : prefix + '/edit/' + outChannel + "/" + merchNo + "/" + accountNo// iframe的url
 	});
 }
-function remove(outChannel,merchNo) {
+function remove(outChannel,merchNo,accountNo) {
 	layer.confirm('确定要删除选中的记录？', {
 		btn : [ '确定', '取消' ]
 	}, function() {
@@ -155,7 +155,8 @@ function remove(outChannel,merchNo) {
 			type : "post",
 			data : {
 				'outChannel' : outChannel,
-				'merchNo' : merchNo
+				'merchNo' : merchNo,
+				'accountNo' : accountNo
 			},
 			success : function(r) {
 				if (r.code==0) {

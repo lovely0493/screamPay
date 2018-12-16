@@ -27,7 +27,6 @@ public interface PayQrService {
 	/**
 	 * @Description 释放占用金额
 	 * @param order
-	 * @param merchant
 	 */
 	void releaseMonAmount(Order order);
 
@@ -35,11 +34,12 @@ public interface PayQrService {
 	 * @Description 扫码通道异步回调
 	 * @param merchNo
 	 * @param outChannel
+	 * @param accountNo
 	 * @param monAmount
 	 * @param businessNo
 	 * @param msg 
 	 */
-	void notifyQr(String merchNo, String outChannel, String monAmount, String businessNo, String msg);
+	void notifyQr(String merchNo, String outChannel,String accountNo, String monAmount, String businessNo, String msg);
 
 	/**
 	 * @Description 获取充值金额
@@ -57,7 +57,7 @@ public interface PayQrService {
 	 * @param businessNo
 	 * @param msg 
 	 */
-	void notifyChargeQr(String merchNo, String outChannel, String monAmount, String businessNo, String msg);
+	void notifyChargeQr(String merchNo, String outChannel,String accountNo, String monAmount, String businessNo, String msg);
 
 	/**
 	 * @Description 初始化商户充值记录

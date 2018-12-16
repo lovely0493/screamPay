@@ -4,6 +4,7 @@ import com.qh.common.config.CfgKeyConst;
 import com.qh.common.utils.*;
 import com.qh.pay.api.constenum.OutChannel;
 import com.qh.pay.api.constenum.PayCompany;
+import com.qh.pay.api.utils.DateUtil;
 import com.qh.pay.api.utils.ParamUtil;
 import com.qh.pay.api.utils.Tesseract4JUtils;
 import com.qh.pay.domain.PayQrConfigDO;
@@ -21,6 +22,7 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -82,34 +84,33 @@ public class PayQrConfigController {
 	    return "pay/payQrConfig/add";
 	}
 
-	@GetMapping("/edit/{outChannel}/{merchNo}")
+	@GetMapping("/edit/{outChannel}/{merchNo}/{accountNo}")
 	@RequiresPermissions("pay:payQrConfig:edit")
-	String edit(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo, Model model){
+	String edit(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,
+				@PathVariable("accountNo") String accountNo,Model model){
 		model.addAttribute("payCompanys", PayCompany.jfDesc());
 		model.addAttribute("outChannels", OutChannel.jfDesc());
 		UserDO user = ShiroUtils.getUser();
         if(!ShiroUtils.ifMerch(user) || merchNo.equals(user.getUsername())){
-        	PayQrConfigDO payQrConfig = payQrConfigService.get(outChannel,merchNo);
+        	PayQrConfigDO payQrConfig = payQrConfigService.get(outChannel,merchNo,accountNo);
         	model.addAttribute("payQrConfig", payQrConfig);
         }
 	    return "pay/payQrConfig/edit";
 	}
 
 	@ResponseBody
-	@PostMapping("/getQrs/{outChannel}/{merchNo}")
+	@PostMapping("/getQrs/{outChannel}/{merchNo}/{accountNo}")
 	@RequiresPermissions("pay:payQrConfig:upload")
-	R getQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo){
+	R getQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,
+			 @PathVariable("accountNo") String accountNo){
 		UserDO user = ShiroUtils.getUser();
 		if(!ShiroUtils.ifMerch(user) || merchNo.equals(user.getUsername())){
-			PayQrConfigDO payQrConfig = payQrConfigService.get(outChannel,merchNo);
+			PayQrConfigDO payQrConfig = payQrConfigService.get(outChannel,merchNo,accountNo);
 			return R.okData(payQrConfig);
 		}
 		return R.error("获取图片二维码失败！");
 	}
 
-
-
-	
 	/**
 	 * 保存
 	 */
@@ -152,25 +153,27 @@ public class PayQrConfigController {
 	@PostMapping( "/remove")
 	@ResponseBody
 	@RequiresPermissions("pay:payQrConfig:remove")
-	public R remove(@RequestParam("outChannel") String outChannel,@RequestParam("merchNo") String merchNo){
+	public R remove(@RequestParam("outChannel") String outChannel,@RequestParam("merchNo") String merchNo,
+					@RequestParam("accountNo") String accountNo){
 		UserDO user = ShiroUtils.getUser();
 		if(ShiroUtils.ifMerch(user) && !user.getUsername().equals(merchNo)){
 			return R.error("权限错误");
 		}
-		if(payQrConfigService.remove(outChannel, merchNo)>0){
+		if(payQrConfigService.remove(outChannel, merchNo,accountNo)>0){
 			return R.ok();
 		}
 		return R.error();
 	}
 	
-	@GetMapping("/editQrs/{outChannel}/{merchNo}")
+	@GetMapping("/editQrs/{outChannel}/{merchNo}/{accountNo}")
 	@RequiresPermissions("pay:payQrConfig:upload")
-	String editQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo, Model model){
+	String editQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,
+				   @PathVariable("accountNo") String accountNo,Model model){
 		model.addAttribute("payCompanys", PayCompany.jfDesc());
 		model.addAttribute("outChannels", OutChannel.jfDesc());
 		UserDO user = ShiroUtils.getUser();
 		if(!ShiroUtils.ifMerch(user) || merchNo.equals(user.getUsername())){
-        	PayQrConfigDO payQrConfig = payQrConfigService.get(outChannel,merchNo);
+        	PayQrConfigDO payQrConfig = payQrConfigService.get(outChannel,merchNo,accountNo);
         	model.addAttribute("payQrConfig", payQrConfig);
         }
 	    return "pay/payQrConfig/editQrs";
@@ -188,16 +191,15 @@ public class PayQrConfigController {
 	 * @return
 	 */
 	@ResponseBody
-	@PostMapping("/batchUploadQrs/{outChannel}/{merchNo}")
+	@PostMapping("/batchUploadQrs/{outChannel}/{merchNo}/{accountNo}")
 	@RequiresPermissions("pay:payQrConfig:upload")
 	R batchUploadQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,
-						   @RequestParam("file") MultipartFile file) throws Exception{
+					 @PathVariable("accountNo") String accountNo,@RequestParam("file") MultipartFile file) throws Exception{
 		UserDO user = ShiroUtils.getUser();
 		R r = new R();
 		if(ShiroUtils.ifMerch(user) && !user.getUsername().equals(merchNo)){
 			return R.error("权限错误");
 		}
-
 
 		String moneyAmount =  "";
 		if(OutChannel.jfwx.name().equals(outChannel)){
@@ -223,11 +225,12 @@ public class PayQrConfigController {
             return r;
         }
 
-		r =  payQrConfigService.updateQrs(outChannel,merchNo,moneyAmount);
+		r =  payQrConfigService.updateQrs(outChannel,merchNo,accountNo,moneyAmount);
 
 		if(R.ifSucc(r)){
 			try {
-				FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.qr_money_path) + merchNo + File.separator + outChannel + File.separator, moneyAmount.replace(".", "p") + "." + fileType);
+				FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath) + merchNo + File.separator + outChannel + File.separator + accountNo + File.separator,
+						moneyAmount.replace(".", "p") + "." + fileType);
 			} catch (Exception e) {
 				r.put("error","文件上传失败！");
 				return r;
@@ -250,9 +253,10 @@ public class PayQrConfigController {
 	 * @return
 	 */
 	@ResponseBody
-	@PostMapping("/uploadQrs/{outChannel}/{merchNo}")
+	@PostMapping("/uploadQrs/{outChannel}/{merchNo}/{accountNo}")
 	@RequiresPermissions("pay:payQrConfig:upload")
-	R uploadQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,@RequestParam("moneyAmount") String moneyAmount,
+	R uploadQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,
+				@PathVariable("accountNo") String accountNo,@RequestParam("moneyAmount") String moneyAmount,
 			@RequestParam("file") MultipartFile file){
 		UserDO user = ShiroUtils.getUser();
 		if(ShiroUtils.ifMerch(user) && !user.getUsername().equals(merchNo)){
@@ -271,10 +275,11 @@ public class PayQrConfigController {
 		}
 		
 		moneyAmount = ParamUtil.subZeroAndDot(moneyAmount);
-		R r =  payQrConfigService.updateQrs(outChannel,merchNo,moneyAmount);
+		R r =  payQrConfigService.updateQrs(outChannel,merchNo,accountNo,moneyAmount);
 		if(R.ifSucc(r)){
 			try {
-				FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.qr_money_path) + merchNo + File.separator + outChannel + File.separator, moneyAmount.replace(".", "p") + "." + fileType);
+				FileUtil.uploadFile(file.getBytes(), RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath) + merchNo + File.separator + outChannel + File.separator + accountNo + File.separator,
+						moneyAmount.replace(".", "p") + "." + fileType);
 			} catch (Exception e) {
 				return R.error("文件上传失败！");
 			}
@@ -286,25 +291,28 @@ public class PayQrConfigController {
 	 * @Description 删除二维码收款图片
 	 * @param outChannel
 	 * @param merchNo
-	 * @param moneyAmount
+	 * @param moneyAmounts
 	 * @return
 	 */
 	@ResponseBody
-	@PostMapping("/removeQrs/{outChannel}/{merchNo}")
+	@PostMapping("/removeQrs/{outChannel}/{merchNo}/{accountNo}")
 	@RequiresPermissions("pay:payQrConfig:upload")
-	R removeQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,@RequestParam("moneyAmounts[]") String[] moneyAmounts){
+	R removeQrs(@PathVariable("outChannel") String outChannel, @PathVariable("merchNo") String merchNo,
+				@PathVariable("accountNo") String accountNo,@RequestParam("moneyAmounts[]") String[] moneyAmounts){
 		UserDO user = ShiroUtils.getUser();
 		if(ShiroUtils.ifMerch(user) && !user.getUsername().equals(merchNo)){
 			return R.error("权限错误");
 		}
 
-		R r =  payQrConfigService.removeQrs(outChannel,merchNo, Arrays.asList(moneyAmounts));
+		R r =  payQrConfigService.removeQrs(outChannel,merchNo,accountNo, Arrays.asList(moneyAmounts));
 		if(R.ifSucc(r)){
 			for(String moneyAmount:moneyAmounts){
 				moneyAmount = ParamUtil.subZeroAndDot(moneyAmount);
-				FileUtil.deleteFile(RedisUtil.getSysConfigValue(CfgKeyConst.qr_money_path) + merchNo + File.separator + outChannel + File.separator + moneyAmount.replace(".", "p") + ".jpg" );
+				FileUtil.deleteFile(RedisUtil.getSysConfigValue(CfgKeyConst.payFilePath) + merchNo + File.separator + outChannel + File.separator + accountNo +  File.separator +
+						moneyAmount.replace(".", "p") + ".jpg" );
 			}
 		}
 		return r;
 	}
+
 }

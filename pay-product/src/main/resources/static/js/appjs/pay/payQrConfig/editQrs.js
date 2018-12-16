@@ -2,8 +2,6 @@ var batchUploader;
 var uploader;
 
 $().ready(function() {
-
-
     load();
 	// $("#divQrs a").click(function(){
 	// 	var $a = $(this);
@@ -107,7 +105,7 @@ function load(){
 
 function removeBatch(amounts){
     $.ajax({
-        url : "/pay/payQrConfig/removeQrs/" + outChannel + "/" + merchNo,
+        url : "/pay/payQrConfig/removeQrs/" + outChannel + "/" + merchNo + '/' + accountNo,
         type : "post",
         data : {
             'moneyAmounts': amounts,
@@ -126,7 +124,7 @@ function removeBatch(amounts){
 
 function reload() {
     $.ajax({
-        url : "/pay/payQrConfig/getQrs/" + outChannel + "/" + merchNo,
+        url : "/pay/payQrConfig/getQrs/" + outChannel + "/" + merchNo+ '/' + accountNo,
         type : "post",
         data : {
         },
@@ -188,7 +186,7 @@ function showBatchUploadQr(){
         theme: 'fa',
         language: 'zh',
         maxFileCount:20,
-        uploadUrl: '/pay/payQrConfig/batchUploadQrs/' + outChannel + '/' + merchNo,
+        uploadUrl: '/pay/payQrConfig/batchUploadQrs/' + outChannel + '/' + merchNo + '/' + accountNo,
         hideThumbnailContent: true // hide image, pdf, text or other content in the thumbnail preview
     });
 }
@@ -201,7 +199,7 @@ function showAmountPic(amount){
 	if(amount){
 	    console.log(amount);
 		var amountPath = amount.replace('￥','').replace('.','p');
-		var content = "<img width='250' src='/files/"+merchNo + "/"+ outChannel + "/" + amountPath + ".jpg?r="+Math.random()+"'>";
+		var content = "<img width='250' src='/files/"+merchNo + "/"+ outChannel+ '/' + accountNo + "/" + amountPath + ".jpg?r="+Math.random()+"'>";
 		picIndex = layer.open({
 		  type: 1,
 		  shade: false,
@@ -253,17 +251,15 @@ function noNumbers(e) {
 
 var outChannel = $("#outChannel").val();
 var merchNo = $("#merchNo").val();
+var accountNo = $("#accountNo").val();
 var index = null;
 var picIndex = null;
-
-
-
 
 // 文件上传
 layui.use('upload', function() {
     uploader = layui.upload.render({
         elem : '#moneyAmountFile', // 绑定元素
-        url : '/pay/payQrConfig/uploadQrs/' + outChannel + '/' + merchNo,// 上传接口
+        url : '/pay/payQrConfig/uploadQrs/' + outChannel + '/' + merchNo + '/' + accountNo,// 上传接口
         size : 1000,
         accept : 'file',
         before : function(obj) {

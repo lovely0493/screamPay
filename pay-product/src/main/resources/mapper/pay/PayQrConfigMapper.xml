@@ -44,18 +44,17 @@
 		<set>
 			<if test="accountName != null">`account_name` = #{accountName}, </if>
 			<if test="accountPhone != null">`account_phone` = #{accountPhone}, </if>
-			<if test="accountNo != null">`account_no` = #{accountNo}, </if>
 			<if test="serviceTel != null">`service_tel` = #{serviceTel}, </if>
 			<if test="memo != null">`memo` = #{memo}, </if>
 			<if test="costRate != null">`cost_rate` = #{costRate}, </if>
 			<if test="jfRate != null">`jf_rate` = #{jfRate}, </if>
 			<if test="apiKey != null">`api_key` = #{apiKey}, </if>
 		</set>
-		where merch_no = #{merchNo} and out_channel = #{outChannel} 
+		where merch_no = #{merchNo} and out_channel = #{outChannel} and account_no = #{accountNo}
 	</update>
 	
 	<delete id="remove">
-		delete from pay_qr_config where merch_no = #{merchNo} and out_channel = #{outChannel} 
+		delete from pay_qr_config where merch_no = #{merchNo} and out_channel = #{outChannel} and account_no = #{accountNo}
 	</delete>
 	
 </mapper>

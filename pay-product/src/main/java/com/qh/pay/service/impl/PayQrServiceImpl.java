@@ -1,52 +1,30 @@
 package com.qh.pay.service.impl;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.transaction.Transactional;
-
+import com.qh.common.config.Constant;
+import com.qh.common.utils.R;
+import com.qh.pay.api.Order;
+import com.qh.pay.api.PayConstants;
+import com.qh.pay.api.constenum.*;
+import com.qh.pay.api.utils.DateUtil;
+import com.qh.pay.api.utils.ParamUtil;
+import com.qh.pay.dao.*;
+import com.qh.pay.domain.*;
+import com.qh.pay.service.*;
+import com.qh.redis.RedisConstants;
+import com.qh.redis.service.RedisMsg;
+import com.qh.redis.service.RedisUtil;
+import com.qh.redis.service.RedissonLockUtil;
+import com.qh.sms.service.SMSUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.api.RLock;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.qh.common.config.Constant;
-import com.qh.common.utils.R;
-import com.qh.pay.api.Order;
-import com.qh.pay.api.PayConstants;
-import com.qh.pay.api.constenum.ClearState;
-import com.qh.pay.api.constenum.FeeType;
-import com.qh.pay.api.constenum.OrderParamKey;
-import com.qh.pay.api.constenum.OrderState;
-import com.qh.pay.api.constenum.OrderType;
-import com.qh.pay.api.constenum.OutChannel;
-import com.qh.pay.api.constenum.PayCompany;
-import com.qh.pay.api.utils.DateUtil;
-import com.qh.pay.api.utils.ParamUtil;
-import com.qh.pay.dao.MerchChargeDao;
-import com.qh.pay.dao.PayOrderDao;
-import com.qh.pay.dao.PayOrderLoseDao;
-import com.qh.pay.dao.RecordFoundAcctDao;
-import com.qh.pay.dao.RecordFoundAvailAcctDao;
-import com.qh.pay.dao.RecordMerchAvailBalDao;
-import com.qh.pay.dao.RecordMerchBalDao;
-import com.qh.pay.domain.MerchCharge;
-import com.qh.pay.domain.Merchant;
-import com.qh.pay.domain.PayAcctBal;
-import com.qh.pay.domain.PayQrConfigDO;
-import com.qh.pay.domain.RecordFoundAcctDO;
-import com.qh.pay.domain.RecordMerchBalDO;
-import com.qh.pay.service.MerchantService;
-import com.qh.pay.service.PayHandlerService;
-import com.qh.pay.service.PayQrConfigService;
-import com.qh.pay.service.PayQrService;
-import com.qh.pay.service.PayService;
-import com.qh.redis.service.RedisMsg;
-import com.qh.redis.service.RedisUtil;
-import com.qh.redis.service.RedissonLockUtil;
-import com.qh.sms.service.SMSUtils;
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @version 1.0.0
@@ -86,13 +64,13 @@ public class PayQrServiceImpl implements PayQrService {
 	public R getChargeMon(String monAmount, String merchNo,String outChannel) {
 		PayAcctBal pab = RedisUtil.getPayFoundBal();
 		String pabFoundNo = pab.getUsername();
-		PayQrConfigDO payQrCfg = payQrConfigService.get(outChannel, pabFoundNo);
-        if (payQrCfg == null) {
-            return R.error(pabFoundNo + "未配置相应的资金账号扫码通道");
+        Set<Object> accountNos = payQrConfigService.findAccountNo(outChannel,merchNo);
+        if (CollectionUtils.isEmpty(accountNos)) {
+            return R.error(merchNo + "未配置相应的扫码通道");
         }
-        if (!checkGatewayIsAlive(pab.getUsername(), outChannel)) {
-            SMSUtils.sendMessageNotify(payQrCfg.getAccountPhone(), OutChannel.jfDesc().get(outChannel));
-            return R.error("通道断开连接");
+        PayQrConfigDO payQrCfg = this.findAccountNo(outChannel,merchNo,accountNos);
+        if(payQrCfg == null){
+            return R.error("未找到相应的有效的扫码通道");
         }
         //资金账户下的金额 放置对应的充值商户号
         String newMonAmount = findCloseMonAmount(monAmount,merchNo, payQrCfg);
@@ -102,16 +80,55 @@ public class PayQrServiceImpl implements PayQrService {
 		
 		Map<String, String> resultMap = new HashMap<>();
 		resultMap.put("amount", newMonAmount);
+		resultMap.put("accountNo",payQrCfg.getAccountNo());
         if(payQrCfg != null && payQrCfg.getQrs().containsKey(newMonAmount)){
-            resultMap.put("qr_url", "/files/" + pabFoundNo + "/" + outChannel + "/" + newMonAmount.replace(".", "p") + ".jpg?r=" + ParamUtil.generateCode6());
+            resultMap.put("qr_url", "/files/" + pabFoundNo + "/" + outChannel + "/" + payQrCfg.getAccountNo() + "/" + newMonAmount.replace(".", "p") + ".jpg?r=" + DateUtil.getCurrentTimeInt());
         }else{
-            resultMap.put("qr_url", "/files/" + pabFoundNo + "/" + outChannel + "/0.jpg?r=" + ParamUtil.generateCode6());
+            resultMap.put("qr_url", "/files/" + pabFoundNo + "/" + outChannel + "/" + payQrCfg.getAccountNo() + "/0.jpg?r=" + DateUtil.getCurrentTimeInt());
         }
-        int remainSec = RedisUtil.getMonAmountOccupyValidTime(pabFoundNo, outChannel, newMonAmount);
+        int remainSec = RedisUtil.getMonAmountOccupyValidTime(pabFoundNo, outChannel, payQrCfg.getAccountNo(),newMonAmount);
 		resultMap.put("remainSec", String.valueOf(remainSec));
 		return R.okData(resultMap);
 	}
-    
+
+    private PayQrConfigDO findAccountNo(String outChannel, String merchNo, Set<Object> accountNos) {
+        List<PayQrTotalMoney> qrTotalMoneys = new ArrayList<>();
+        Map<Object,Boolean> map = new HashMap<>();
+        //先检测通道是否存在
+        for(Object obj:accountNos){
+            if(checkGatewayIsAlive(merchNo,outChannel,(String)obj)){
+                map.put(obj,true);
+            }else{
+                PayQrConfigDO payQrCfg = payQrConfigService.get(outChannel,merchNo,(String)obj);
+                SMSUtils.sendMessageNotify(payQrCfg.getAccountPhone(), OutChannel.jfDesc().get(outChannel));
+            }
+        }
+        //只遍历开启的通道
+        for (Object obj: map.keySet()) {
+            PayQrTotalMoney qrTotalMoney = (PayQrTotalMoney) RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_qr_total_money + outChannel + RedisConstants.link_symbol + merchNo,(String)obj);
+            if (qrTotalMoney == null){
+                return payQrConfigService.get(outChannel,merchNo,(String)obj);
+            }else{
+                qrTotalMoneys.add(qrTotalMoney);
+            }
+        }
+        if(CollectionUtils.isNotEmpty(qrTotalMoneys)){
+            Collections.sort(qrTotalMoneys, new Comparator<PayQrTotalMoney>() {
+                @Override
+                public int compare(PayQrTotalMoney o1, PayQrTotalMoney o2) {
+                    return o1.getTotalMoney().compareTo(o2.getTotalMoney());
+                }
+            });
+            int size = qrTotalMoneys.size();
+            PayQrTotalMoney qrTotalMoney;
+            for(int i=0;i<size;i++){
+                qrTotalMoney = qrTotalMoneys.get(i);
+                return payQrConfigService.get(outChannel,merchNo,qrTotalMoney.getAccountNo());
+            }
+        }
+        return null;
+    }
+
     /* (非 Javadoc)
      * Description:
      * @see com.qh.pay.service.PayQrService#qrOrder(com.qh.pay.api.Order)
@@ -120,31 +137,28 @@ public class PayQrServiceImpl implements PayQrService {
     public R qrOrder(Order order, Merchant merchant) {
         String outChannel = order.getOutChannel();
         String merchNo = order.getMerchNo();
-        PayQrConfigDO payQrCfg = payQrConfigService.get(outChannel, merchNo);
-        if (payQrCfg == null) {
+        Set<Object> accountNos = payQrConfigService.findAccountNo(outChannel,merchNo);
+        if (CollectionUtils.isEmpty(accountNos)) {
             return R.error(merchNo + "未配置相应的扫码通道");
         }
+        PayQrConfigDO payQrCfg = this.findAccountNo(outChannel,merchNo,accountNos);
+        if(payQrCfg == null){
+            return R.error("未找到相应的有效的扫码通道");
+        }
         BigDecimal amount = order.getAmount();
-
         String monAmount = amount.toPlainString();
 
         if (payQrCfg.getQrs() == null) {
             return R.error("请配置相应的支付扫码金额");
         }
-        if (!checkGatewayIsAlive(merchNo, outChannel)) {
-            SMSUtils.sendMessageNotify(payQrCfg.getAccountPhone(), OutChannel.jfDesc().get(outChannel));
-            return R.error("通道断开连接");
-        }
         String newMonAmount = findCloseMonAmount(monAmount,order.getOrderNo(), payQrCfg);
         if (ParamUtil.isEmpty(newMonAmount)) {
             return R.error(merchNo + "," + monAmount + "支付金额被占用或不存在");
         }
+        order.setPayMerch(payQrCfg.getAccountNo());
         order.setRealAmount(new BigDecimal(newMonAmount));
         // 聚富手续金额
         BigDecimal jfRate = null;
-		/*if(merchant.getHandRate() != null && (jfRate=merchant.getHandRate().get(order.getOutChannel())) != null){
-			jfRate = merchant.getHandRate().get(order.getOutChannel());
-		}*/
 		if(jfRate == null){
 			jfRate =  payQrCfg.getJfRate();
 		}
@@ -187,13 +201,15 @@ public class PayQrServiceImpl implements PayQrService {
      * @Author chensi
      * @Time 2017/12/20 19:29
      */
-    private boolean checkGatewayIsAlive(String merchNo, String outChannel) {
-        Long oldTime = (Long) RedisUtil.getQrGatewayLastSyncTime(merchNo, outChannel);
+    private boolean checkGatewayIsAlive(String merchNo, String outChannel,String accountNo) {
+        Long oldTime = (Long) RedisUtil.getQrGatewayLastSyncTime(merchNo, outChannel,accountNo);
+        logger.info(""+merchNo + "    " + outChannel + "     "+ accountNo + "      " +oldTime);
         if(oldTime == null){
-        	return true;
+        	return false;
         }
         long nowTime = new Date().getTime();
         long timeDif = nowTime - oldTime;
+        logger.info(""+timeDif);
         if (timeDif > 1000 * 320 || timeDif <= 0) {
             return false;
         }
@@ -212,13 +228,13 @@ public class PayQrServiceImpl implements PayQrService {
         boolean findFlag = false;
         monAmount = ParamUtil.subZeroAndDot(monAmount);
         for (int i = 0; i < count; i++) {
-            RLock monAmountLock = RedissonLockUtil.getMonAmountLock(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(), monAmount);
+            RLock monAmountLock = RedissonLockUtil.getMonAmountLock(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(), payQrCfg.getAccountNo(), monAmount);
             try {
                 monAmountLock.lock();
-                if (!RedisUtil.ifMonAmountOccupy(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(), monAmount)) {
+                if (!RedisUtil.ifMonAmountOccupy(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(),payQrCfg.getAccountNo(), monAmount)) {
                     findFlag = true;
-                    RedisUtil.setMonAmountOccupy(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(), monAmount);
-                    RedisUtil.setMonAmountOrderNo(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(),monAmount,orderNo);
+                    RedisUtil.setMonAmountOccupy(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(),payQrCfg.getAccountNo(), monAmount);
+                    RedisUtil.setMonAmountOrderNo(payQrCfg.getMerchNo(), payQrCfg.getOutChannel(),payQrCfg.getAccountNo(),monAmount,orderNo);
                 }
             } finally {
                 monAmountLock.unlock();
@@ -238,11 +254,11 @@ public class PayQrServiceImpl implements PayQrService {
     @Override
     public void releaseMonAmount(Order order) {
         String monAmount = order.getRealAmount().toPlainString();
-        RLock monAmountLock = RedissonLockUtil.getMonAmountLock(order.getMerchNo(), order.getOutChannel(), monAmount);
+        RLock monAmountLock = RedissonLockUtil.getMonAmountLock(order.getMerchNo(), order.getOutChannel(),order.getPayMerch(), monAmount);
         try {
             monAmountLock.lock();
-            RedisUtil.delMonAmountOccupy(order.getMerchNo(), order.getOutChannel(), monAmount);
-            RedisUtil.delMonAmountOrderNo(order.getMerchNo(), order.getOutChannel(), monAmount);
+            RedisUtil.delMonAmountOccupy(order.getMerchNo(), order.getOutChannel(),order.getPayMerch(),monAmount);
+            RedisUtil.delMonAmountOrderNo(order.getMerchNo(), order.getOutChannel(),order.getPayMerch(), monAmount);
         } finally {
             monAmountLock.unlock();
         }
@@ -253,25 +269,25 @@ public class PayQrServiceImpl implements PayQrService {
      * @see com.qh.pay.service.PayQrService#notifyQr(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public void notifyQr(String merchNo, String outChannel, String monAmount, String businessNo,String msg) {
+    public void notifyQr(String merchNo, String outChannel, String accountNo,String monAmount, String businessNo,String msg) {
         monAmount = ParamUtil.subZeroAndDot(monAmount);
-        RLock monAmountLock = RedissonLockUtil.getMonAmountLock(merchNo, outChannel, monAmount);
+        RLock monAmountLock = RedissonLockUtil.getMonAmountLock(merchNo, outChannel,accountNo, monAmount);
         try {
             monAmountLock.lock();
-            if(!RedisUtil.ifQrBusinessNo(merchNo, outChannel, businessNo)){//该支付业务单号已经处理
+            if(!RedisUtil.ifQrBusinessNo(merchNo, outChannel,accountNo, businessNo)){//该支付业务单号已经处理
                 logger.warn("该支付业务单号已经处理,{}", businessNo);
                 return ;
             }
-            String orderNo = RedisUtil.getMonAmountOrderNo(merchNo, outChannel, monAmount);
+            String orderNo = RedisUtil.getMonAmountOrderNo(merchNo, outChannel, accountNo,monAmount);
             if(ParamUtil.isEmpty(orderNo)){
                 logger.error("该支付订单号不存在,{}", orderNo);
-                this.saveQrOrderLoseData(merchNo, outChannel, monAmount,businessNo,msg);
+                this.saveQrOrderLoseData(merchNo, outChannel,accountNo, monAmount,businessNo,msg);
                 return ;
             }
             Order order = RedisUtil.getOrder(merchNo, orderNo);
-            if(ParamUtil.isEmpty(order)){
+            if(ParamUtil.isEmpty(order) || DateUtil.getCurrentTimeInt() > order.getCrtDate() + 300){
                 logger.error("该支付订单不存在,{},{}", merchNo,orderNo);
-                this.saveQrOrderLoseData(merchNo, outChannel, monAmount,businessNo,msg);
+                this.saveQrOrderLoseData(merchNo, outChannel,accountNo, monAmount,businessNo,msg);
                 return ;
             }
             if(order.getRealAmount().compareTo(new BigDecimal(monAmount)) != 0){
@@ -289,11 +305,32 @@ public class PayQrServiceImpl implements PayQrService {
             
             RedisUtil.setOrder(order);
             RedisMsg.orderNotifyMsg(merchNo, orderNo);
-            RedisUtil.setQrBusinessNo(merchNo, outChannel, businessNo);
-            RedisUtil.delMonAmountOccupy(merchNo, outChannel, monAmount);
-            RedisUtil.delMonAmountOrderNo(merchNo, outChannel, monAmount);
+            RedisUtil.setQrBusinessNo(merchNo, outChannel, accountNo,businessNo);
+            RedisUtil.delMonAmountOccupy(merchNo, outChannel,accountNo, monAmount);
+            RedisUtil.delMonAmountOrderNo(merchNo, outChannel,accountNo, monAmount);
+            this.qrTotalMoney(merchNo, outChannel,accountNo, monAmount);
         } finally {
             monAmountLock.unlock();
+        }
+    }
+    private void qrTotalMoney(String merchNo,String outChannel,String accountNo,String monAmount){
+        RLock qrTotalMoneyLock = RedissonLockUtil.getMonAmountLock(merchNo, outChannel,accountNo, monAmount);
+        try{
+            qrTotalMoneyLock.lock(5,TimeUnit.SECONDS);
+            PayQrTotalMoney payQrTotalMoney = (PayQrTotalMoney) RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_qr_total_money + outChannel + RedisConstants.link_symbol + merchNo,accountNo);
+            if(payQrTotalMoney == null){
+                payQrTotalMoney = new PayQrTotalMoney();
+                payQrTotalMoney.setOutChannel(outChannel);
+                payQrTotalMoney.setMerchNo(merchNo);
+                payQrTotalMoney.setAccountNo(accountNo);
+                payQrTotalMoney.setTotalMoney(new BigDecimal(monAmount));
+            }else{
+                payQrTotalMoney.setTotalMoney(payQrTotalMoney.getTotalMoney().add(new BigDecimal(monAmount)));
+            }
+            RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qr_total_money + outChannel + RedisConstants.link_symbol + merchNo,accountNo,payQrTotalMoney);
+
+        }finally {
+            qrTotalMoneyLock.unlock();
         }
     }
 
@@ -305,9 +342,13 @@ public class PayQrServiceImpl implements PayQrService {
 	 * @param businessNo
 	 * @param msg
 	 */
-	private void saveQrOrderLoseData(String merchNo, String outChannel, String monAmount, String businessNo,
+	private void saveQrOrderLoseData(String merchNo, String outChannel,String accountNo, String monAmount, String businessNo,
 			String msg) {
-		Order order = new Order();
+        Order order = payOrderLoseDao.getByBusinessNo(businessNo,merchNo,outChannel);
+        if(order != null){
+            return;
+        }
+		order = new Order();
 		order.setOrderNo("0");
 		order.setMerchNo(merchNo);
 		order.setOutChannel(outChannel);
@@ -323,6 +364,7 @@ public class PayQrServiceImpl implements PayQrService {
 		order.setOrderType(OrderType.pay.id());
 		order.setPayCompany(PayCompany.jf.name());
 		order.setCrtDate(DateUtil.getCurrentTimeInt());
+		order.setPayMerch(accountNo);
 		payOrderLoseDao.save(order);
 	}
 
@@ -331,16 +373,16 @@ public class PayQrServiceImpl implements PayQrService {
 	 * @see com.qh.pay.service.PayQrService#notifyChargeQr(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void notifyChargeQr(String merchNo, String outChannel, String monAmount, String businessNo,String msg) {
+	public void notifyChargeQr(String merchNo, String outChannel, String monAmount, String accountNo,String businessNo,String msg) {
 		monAmount = ParamUtil.subZeroAndDot(monAmount);
-        RLock monAmountLock = RedissonLockUtil.getMonAmountLock(merchNo, outChannel, monAmount);
+        RLock monAmountLock = RedissonLockUtil.getMonAmountLock(merchNo, outChannel,accountNo, monAmount);
         try {
             monAmountLock.lock();
-            if(!RedisUtil.ifQrBusinessNo(merchNo, outChannel, businessNo)){//该支付业务单号已经处理
+            if(!RedisUtil.ifQrBusinessNo(merchNo, outChannel,accountNo, businessNo)){//该支付业务单号已经处理
                 logger.warn("该充值业务单号已经处理,{}", businessNo);
                 return ;
             }
-            String chargeMerchNo = RedisUtil.getMonAmountOrderNo(merchNo, outChannel, monAmount);
+            String chargeMerchNo = RedisUtil.getMonAmountOrderNo(merchNo, outChannel,accountNo, monAmount);
             if(ParamUtil.isEmpty(chargeMerchNo)){
                 logger.error("该充值商户不存在,{}", chargeMerchNo);
                 return ;
@@ -349,6 +391,7 @@ public class PayQrServiceImpl implements PayQrService {
             MerchCharge merchCharge = PayQrService.initMerchCharge(chargeMerchNo,outChannel,monAmount,businessNo);
             merchCharge.setClearState(ClearState.succ.id());
             merchCharge.setOrderState(OrderState.succ.id());
+            merchCharge.setAccountNo(accountNo);
             
             if(ParamUtil.isNotEmpty(msg) && msg.length() > 50){
             	merchCharge.setMsg(msg.substring(0, 50));
@@ -358,9 +401,10 @@ public class PayQrServiceImpl implements PayQrService {
             RedisUtil.setMerchCharge(merchCharge);
             RedisMsg.chargeDataMsg(chargeMerchNo, businessNo);
             
-            RedisUtil.setQrBusinessNo(merchNo, outChannel, businessNo);
-            RedisUtil.delMonAmountOccupy(merchNo, outChannel, monAmount);
-            RedisUtil.delMonAmountOrderNo(merchNo, outChannel, monAmount);
+            RedisUtil.setQrBusinessNo(merchNo, outChannel,accountNo, businessNo);
+            RedisUtil.delMonAmountOccupy(merchNo, outChannel, accountNo,monAmount);
+            RedisUtil.delMonAmountOrderNo(merchNo, outChannel, accountNo,monAmount);
+            this.qrTotalMoney(merchNo, outChannel,accountNo, monAmount);
         } finally {
             monAmountLock.unlock();
         }
@@ -376,14 +420,21 @@ public class PayQrServiceImpl implements PayQrService {
 		RLock lock = RedissonLockUtil.getChargeLock(merchNo, businessNo);
 		if (lock.tryLock()) {
 			try {
-				MerchCharge merchCharge = RedisUtil.getMerchCharge(merchNo, businessNo);
+			    String acountNo = "";
+			    if(merchNo.contains(RedisConstants.key_split_symbol)){
+			        String[] datas = merchNo.split(RedisConstants.key_split_symbol);
+			        merchNo = datas[0];
+                    acountNo = datas[1];
+                }
+
+				MerchCharge merchCharge = RedisUtil.getMerchCharge(merchNo, acountNo,businessNo);
 				if(merchCharge == null){
-					logger.info("商户充值保存失败，充值订单不存在，{}，{}",merchNo,businessNo);
+					logger.error("商户充值保存失败，充值订单不存在，{}，{},{}",merchNo,acountNo,businessNo);
 					return;
 				}
 				if(this.saveChargeData(merchCharge)){
 					RedisUtil.delMerchCharge(merchCharge);
-					RedisUtil.delQrBusinessNo(RedisUtil.getPayFoundBal().getUsername(), merchCharge.getOutChannel(), businessNo);
+					RedisUtil.delQrBusinessNo(RedisUtil.getPayFoundBal().getUsername(), merchCharge.getOutChannel(),acountNo, businessNo);
 					logger.info("商户充值保存成功，{}，{}",merchNo,businessNo);
 				}
 			} finally {
@@ -427,7 +478,7 @@ public class PayQrServiceImpl implements PayQrService {
 		// 商户信息
 		Merchant merchant = merchantService.get(merchNo);
 		// 支付通道信息
-		PayQrConfigDO  payQrConfig = payQrConfigService.get(order.getOutChannel(), merchNo);
+		PayQrConfigDO  payQrConfig = payQrConfigService.get(order.getOutChannel(), merchNo,order.getPayMerch());
 		
 		BigDecimal amount = order.getRealAmount();
 		// 成本金额
@@ -519,7 +570,6 @@ public class PayQrServiceImpl implements PayQrService {
         merchCharge.setClearState(ClearState.succ.id());
         merchCharge.setOrderState(OrderState.succ.id());
         merchCharge.setCrtDate(DateUtil.getCurrentTimeInt());
-
         RLock lock = RedissonLockUtil.getChargeLock(merchNo, businessNo);
         if (lock.tryLock()) {
             try {
@@ -567,7 +617,7 @@ public class PayQrServiceImpl implements PayQrService {
 				jfRate = merchant.getHandRate().get(order.getOutChannel());
 			}*/
 			if(jfRate == null){
-				PayQrConfigDO payQrConfig = payQrConfigService.get(order.getOutChannel(), order.getMerchNo());
+				PayQrConfigDO payQrConfig = payQrConfigService.get(order.getOutChannel(), order.getMerchNo(),order.getPayMerch());
 				if(payQrConfig != null){
 					jfRate = payQrConfig.getJfRate();
 				}

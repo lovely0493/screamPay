@@ -5,6 +5,7 @@ import com.qh.pay.domain.PayQrConfigDO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 聚富扫码通道配置
@@ -15,7 +16,7 @@ public interface PayQrConfigService {
 	
 	PayQrConfigDO get(Integer id);
 	
-	PayQrConfigDO get(String outChannel,String merchNo);
+	PayQrConfigDO get(String outChannel,String merchNo,String accountNo);
 	
 	List<PayQrConfigDO> list(Map<String, Object> map);
 	
@@ -25,7 +26,7 @@ public interface PayQrConfigService {
 	
 	int update(PayQrConfigDO payQrConfig);
 	
-	int remove(String outChannel,String merchNo);
+	int remove(String outChannel,String merchNo,String accountNo);
 
 	/**
 	 * @Description 上传二维码收款图片
@@ -34,8 +35,7 @@ public interface PayQrConfigService {
 	 * @param moneyAmount
 	 * @return
 	 */
-	R updateQrs(String outChannel, String merchNo, String moneyAmount);
-
+	R updateQrs(String outChannel, String merchNo, String accountNo, String moneyAmount);
 	/**
 	 * @Description (TODO这里用一句话描述这个方法的作用)
 	 * @param outChannel
@@ -43,7 +43,9 @@ public interface PayQrConfigService {
 	 * @param moneyAmount
 	 * @return
 	 */
-	R removeQrs(String outChannel, String merchNo, String moneyAmount);
+	R removeQrs(String outChannel, String merchNo, String accountNo,String moneyAmount);
 
-	R removeQrs(String outChannel, String merchNo, List<String> moneyAmounts);
+	R removeQrs(String outChannel, String merchNo, String accountNo,List<String> moneyAmounts);
+
+	Set<Object> findAccountNo(String outChannel, String merchNo);
 }

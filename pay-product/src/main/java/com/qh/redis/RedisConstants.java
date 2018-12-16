@@ -16,6 +16,9 @@ public class RedisConstants {
     
     /***连接符**/
 	public static final String link_symbol = "_";
+	
+	/***key split****/
+	public static final String key_split_symbol = "&";
     
     /***用户缓存**/
     public static final String cache_user = "user_";
@@ -115,6 +118,10 @@ public class RedisConstants {
     
     /***聚富支付二维码收款列表***/
     public static final String cache_qrs = "qrs_";
+
+    public static final String cache_qr_total_money = "qr_total_money_";
+
+    public static final String lock_qr_total_money = "lock_qr_total_money_";
     
     /***订单列表 同步*****/
     public static final String lock_order = "lock_ord_";

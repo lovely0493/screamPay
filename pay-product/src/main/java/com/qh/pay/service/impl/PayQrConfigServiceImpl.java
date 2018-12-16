@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.qh.common.config.Constant;
 import com.qh.common.utils.R;
@@ -24,10 +25,10 @@ import com.qh.redis.service.RedisUtil;
 public class PayQrConfigServiceImpl implements PayQrConfigService {
 	
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PayQrConfigServiceImpl.class);
-	
+
 	@Autowired
 	private PayQrConfigDao payQrConfigDao;
-	
+
 	@Autowired
 	private MerchantService merchantService;
 	
@@ -56,16 +57,14 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 				return Constant.data_noexist;
 			}
 		}
-		PayQrConfigDO payQrCfg = (PayQrConfigDO) RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_qrs + payQrConfig.getOutChannel(),
-				 payQrConfig.getMerchNo());
+		PayQrConfigDO payQrCfg = this.getCacheQrs(payQrConfig);
 		if(payQrCfg != null){
-			logger.warn("改通道配置已经存在{}，{}，{}", payQrConfig.getMerchNo(), payQrConfig.getOutChannel());
+			logger.warn("改通道配置已经存在{}，{}，{}, {}", payQrConfig.getMerchNo(), payQrConfig.getOutChannel(),payQrConfig.getAccountNo());
 			return Constant.data_exist;
 		}
 		int count = payQrConfigDao.save(payQrConfig);
 		if(count > 0){
-			RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs + payQrConfig.getOutChannel(),
-					payQrConfig.getMerchNo(), payQrCfg);
+			this.putCacheQrs(payQrConfig);
 		}
 		return count;
 	}
@@ -74,18 +73,16 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 	public int update(PayQrConfigDO payQrConfig){
 		int count = payQrConfigDao.updateByCode(payQrConfig);
 		if(count > 0){
-			payQrConfig.setQrs(get(payQrConfig.getOutChannel(), payQrConfig.getMerchNo()).getQrs());
-			RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs + payQrConfig.getOutChannel(),
-					payQrConfig.getMerchNo(), payQrConfig);
+			payQrConfig.setQrs(this.getCacheQrs(payQrConfig).getQrs());
+			this.putCacheQrs(payQrConfig);
 		}
 		return count;
 	}
 	
 	@Override
-	public int remove(String outChannel,String merchNo){
-		RedisUtil.getRedisTemplate().opsForHash().delete(RedisConstants.cache_qrs + outChannel, 
-				merchNo);
-		return payQrConfigDao.remove(outChannel,merchNo);
+	public int remove(String outChannel,String merchNo,String accountNo){
+		this.delCacheQrs(outChannel,merchNo,accountNo);
+		return payQrConfigDao.remove(outChannel,merchNo,accountNo);
 	}
 
 	/* (非 Javadoc)
@@ -93,13 +90,12 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 	 * @see com.qh.pay.service.PayQrConfigService#get(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public PayQrConfigDO get(String outChannel, String merchNo) {
-		PayQrConfigDO payQrCfg = (PayQrConfigDO) RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_qrs + outChannel,merchNo);
+	public PayQrConfigDO get(String outChannel, String merchNo,String accountNo) {
+		PayQrConfigDO payQrCfg = getCacheQrs(outChannel,merchNo,accountNo);
 		if(payQrCfg == null){
-			payQrCfg =  payQrConfigDao.getByCode(outChannel, merchNo);
+			payQrCfg =  payQrConfigDao.getByCode(outChannel, merchNo,accountNo);
 			if(payQrCfg != null){
-				RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs + outChannel,
-						merchNo, payQrCfg);
+				this.putCacheQrs(payQrCfg);
 			}
 		}
 		return payQrCfg;
@@ -110,9 +106,9 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 	 * @see com.qh.pay.service.PayQrConfigService#updateQrs(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public R updateQrs(String outChannel, String merchNo, String moneyAmount) {
+	public R updateQrs(String outChannel, String merchNo,String accountNo, String moneyAmount) {
 		//支付二维码扫码图片
-		PayQrConfigDO payQrCfg = get(outChannel, merchNo);
+		PayQrConfigDO payQrCfg = this.get(outChannel,merchNo,accountNo);
 		if(payQrCfg == null){
 			return R.error("该商户通道不存在" + merchNo);
 		}
@@ -123,10 +119,9 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 			return R.error("该付款码金额已经存在");
 		}
 		payQrCfg.getQrs().put(moneyAmount, 1);
-		int count = payQrConfigDao.updateQrs(outChannel,merchNo,payQrCfg.getQrs());
+		int count = payQrConfigDao.updateQrs(outChannel,merchNo,accountNo,payQrCfg.getQrs());
 		if(count > 0){
-			RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs + outChannel,
-					merchNo, payQrCfg);
+			this.putCacheQrs(payQrCfg);
 		}
 		return R.ok("处理成功").put("fileName", moneyAmount);
 	}
@@ -136,18 +131,17 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 	 * @see com.qh.pay.service.PayQrConfigService#removeQrs(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public R removeQrs(String outChannel, String merchNo, String moneyAmount) {
+	public R removeQrs(String outChannel, String merchNo,String accountNo, String moneyAmount) {
 		//支付二维码扫码图片
-		PayQrConfigDO payQrCfg = get(outChannel, merchNo);
+		PayQrConfigDO payQrCfg = this.get(outChannel, merchNo,accountNo);
 		if(payQrCfg.getQrs()!=null){
 			payQrCfg.getQrs().remove(moneyAmount);
 		}else{
 			return R.error("二维码收款图片不存在");
 		}
-		int count = payQrConfigDao.updateQrs(outChannel,merchNo,payQrCfg.getQrs());
+		int count = payQrConfigDao.updateQrs(outChannel,merchNo,accountNo,payQrCfg.getQrs());
 		if(count > 0){
-			RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs + outChannel,
-					merchNo, payQrCfg);
+			this.putCacheQrs(payQrCfg);
 		}else{
 			return R.error("删除失败");
 		}
@@ -155,9 +149,9 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 	}
 
 	@Override
-	public R removeQrs(String outChannel, String merchNo, List<String> moneyAmounts) {
+	public R removeQrs(String outChannel, String merchNo, String accountNo,List<String> moneyAmounts) {
 		//支付二维码扫码图片
-		PayQrConfigDO payQrCfg = get(outChannel, merchNo);
+		PayQrConfigDO payQrCfg = this.get(outChannel, merchNo,accountNo);
 		if(payQrCfg.getQrs()!=null){
 			for(String moneyAmount:moneyAmounts){
 				payQrCfg.getQrs().remove(moneyAmount);
@@ -165,15 +159,45 @@ public class PayQrConfigServiceImpl implements PayQrConfigService {
 		}else{
 			return R.error("二维码收款图片不存在");
 		}
-		int count = payQrConfigDao.updateQrs(outChannel,merchNo,payQrCfg.getQrs());
+		int count = payQrConfigDao.updateQrs(outChannel,merchNo,accountNo,payQrCfg.getQrs());
 		if(count > 0){
-			RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs + outChannel,
-					merchNo, payQrCfg);
+			this.putCacheQrs(payQrCfg);
 		}else{
 			return R.error("删除失败");
 		}
 		return R.ok("处理成功");
 	}
+
+    @Override
+    public Set<Object> findAccountNo(String outChannel, String merchNo) {
+        return RedisUtil.getRedisTemplate().opsForHash().keys(RedisConstants.cache_qrs +
+				outChannel + RedisConstants.link_symbol + merchNo);
+    }
+
+
+    private void putCacheQrs(String outChannel, String merchNo,String accountNo,PayQrConfigDO payQrCfg){
+		RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_qrs +
+						outChannel + RedisConstants.link_symbol + merchNo, accountNo, payQrCfg);
+	}
+
+	private void putCacheQrs(PayQrConfigDO payQrCfg){
+		putCacheQrs(payQrCfg.getOutChannel(),payQrCfg.getMerchNo(),payQrCfg.getAccountNo(),payQrCfg);
+	}
+
+	private PayQrConfigDO getCacheQrs(PayQrConfigDO payQrCfg){
+		return getCacheQrs(payQrCfg.getOutChannel(),payQrCfg.getMerchNo(),payQrCfg.getAccountNo());
+	}
+
+	private PayQrConfigDO getCacheQrs(String outChannel, String merchNo,String accountNo){
+		return (PayQrConfigDO) RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_qrs +
+				outChannel + RedisConstants.link_symbol + merchNo, accountNo);
+	}
+	private void delCacheQrs(String outChannel, String merchNo,String accountNo){
+		RedisUtil.getRedisTemplate().opsForHash().delete(RedisConstants.cache_qrs +
+				outChannel + RedisConstants.link_symbol + merchNo,accountNo);
+	}
+
+	private void delCacheQrs(PayQrConfigDO payQrCfg){
+		delCacheQrs(payQrCfg.getOutChannel(),payQrCfg.getMerchNo(),payQrCfg.getAccountNo());
+	}
 }
-
-

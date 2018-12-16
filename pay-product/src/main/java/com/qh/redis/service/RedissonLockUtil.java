@@ -32,9 +32,9 @@ public class RedissonLockUtil {
 		return redissLock.getLock(RedisConstants.lock_charge + merchNo + RedisConstants.link_symbol + businessNo);
 	}
     
-    public static RLock getMonAmountLock(String merchNo,String outChannel, String monAmount){
+    public static RLock getMonAmountLock(String merchNo,String outChannel, String accountNo,String monAmount){
 		return redissLock.getLock(RedisConstants.lock_monAmount_occupy + merchNo + RedisConstants.link_symbol +
-				outChannel + RedisConstants.link_symbol + monAmount);
+				outChannel + RedisConstants.link_symbol + accountNo + RedisConstants.link_symbol + monAmount);
 	}
     
     public static RLock getEventOrderLock(String lockKey){

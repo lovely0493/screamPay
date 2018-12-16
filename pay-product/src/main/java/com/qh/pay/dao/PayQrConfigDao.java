@@ -28,10 +28,10 @@ public interface PayQrConfigDao {
 	PayQrConfigDO get(Integer id);
 	
 	@Select("select `id`,`merch_no`,`out_channel`,`account_no`,`account_name`,`account_phone`,`service_tel`,`memo`,`qrs`,cost_rate,jf_rate,`api_key` from pay_qr_config "
-			+ "where out_channel = #{outChannel} and merch_no = #{merchNo}")
+			+ "where out_channel = #{outChannel} and merch_no = #{merchNo} and account_no = #{accountNo}")
 	@Results({
 			@Result(column = "qrs", jdbcType = JdbcType.VARCHAR, property = "qrs", typeHandler = JsonTypeHandler.class) })
-	PayQrConfigDO getByCode(@Param("outChannel") String outChannel, @Param("merchNo") String merchNo);
+	PayQrConfigDO getByCode(@Param("outChannel") String outChannel, @Param("merchNo") String merchNo,@Param("accountNo") String accountNo);
 	
 	List<PayQrConfigDO> list(Map<String,Object> map);
 	
@@ -44,10 +44,10 @@ public interface PayQrConfigDao {
 	
 	int updateByCode(PayQrConfigDO payQrConfig);
 	
-	int remove(@Param("outChannel") String outChannel, @Param("merchNo") String merchNo);
+	int remove(@Param("outChannel") String outChannel, @Param("merchNo") String merchNo,@Param("accountNo") String accountNo);
 	
-	@Select("select count(1) from pay_qr_config where  merch_no = #{merchNo}  and out_channel = #{outChannel}")
-	int countByMerchNo(@Param("outChannel") String outChannel, @Param("merchNo") String merchNo);
+	@Select("select count(1) from pay_qr_config where  merch_no = #{merchNo}  and out_channel = #{outChannel} and account_no = #{accountNo}")
+	int countByMerchNo(@Param("outChannel") String outChannel, @Param("merchNo") String merchNo, @Param("accountNo") String accountNo);
 
 	/**
 	 * @Description 更新二维码图片
@@ -56,6 +56,6 @@ public interface PayQrConfigDao {
 	 * @param qrs
 	 * @return
 	 */
-	@Update("update pay_qr_config set `qrs` = #{qrs,typeHandler=com.qh.common.config.JsonTypeHandler} where merch_no = #{merchNo} and out_channel = #{outChannel} ")
-	int updateQrs(@Param("outChannel")String outChannel, @Param("merchNo")String merchNo, @Param("qrs")Map<String, Integer> qrs);
+	@Update("update pay_qr_config set `qrs` = #{qrs,typeHandler=com.qh.common.config.JsonTypeHandler} where merch_no = #{merchNo} and out_channel = #{outChannel} and account_no = #{accountNo}")
+	int updateQrs(@Param("outChannel")String outChannel, @Param("merchNo")String merchNo, @Param("accountNo") String accountNo, @Param("qrs")Map<String, Integer> qrs);
 }

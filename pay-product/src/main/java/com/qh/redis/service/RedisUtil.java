@@ -16,7 +16,6 @@ import com.qh.pay.api.constenum.UserType;
 import com.qh.pay.api.utils.AesUtil;
 import com.qh.pay.api.utils.DateUtil;
 import com.qh.pay.api.utils.ParamUtil;
-import com.qh.pay.domain.Agent;
 import com.qh.pay.domain.MerchCharge;
 import com.qh.pay.domain.PayAcctBal;
 import com.qh.pay.domain.PayPropertyDO;
@@ -54,6 +53,7 @@ public class RedisUtil {
 	public static Set getHashValueKeys(String key){
 		return redisTemplate.opsForHash().keys(key);
 	}
+	
 	public static List<Object> getHashValueList(String key){
 
     	return redisTemplate.opsForHash().values(key);
@@ -79,15 +79,15 @@ public class RedisUtil {
     /**
      * @Description 设置聚富支付网管最近连接时间
      */
-    public static void setQrGatewayLastSyncTime(String merchNo, String outChannel, Object obj) {
-        redisTemplate.opsForHash().put(RedisConstants.cache_qr_last_login_time, merchNo + RedisConstants.link_symbol + outChannel, obj);
+    public static void setQrGatewayLastSyncTime(String merchNo, String outChannel,String accountNo, Object obj) {
+        redisTemplate.opsForHash().put(RedisConstants.cache_qr_last_login_time, merchNo + RedisConstants.link_symbol + outChannel + RedisConstants.link_symbol + accountNo, obj);
     }
 
     /**
      * @Description 获取聚富支付网管最近连接时间
      */
-    public static Object getQrGatewayLastSyncTime(String merchNo, String outChannel) {
-        return redisTemplate.opsForHash().get(RedisConstants.cache_qr_last_login_time, merchNo + RedisConstants.link_symbol + outChannel);
+    public static Object getQrGatewayLastSyncTime(String merchNo, String outChannel,String accountNo) {
+        return redisTemplate.opsForHash().get(RedisConstants.cache_qr_last_login_time, merchNo + RedisConstants.link_symbol + outChannel + RedisConstants.link_symbol + accountNo);
     }
 
 
@@ -339,6 +339,7 @@ public class RedisUtil {
 	public static void setBanks(Integer cardType, String payCompany,String payMerch,List<String> banks){
 		redisTemplate.opsForHash().put(RedisConstants.cache_banks + cardType, payCompany + RedisConstants.link_symbol + payMerch,banks);
 	}
+	
 	/**
 	 * 
 	 * @Description 支付金额
@@ -346,8 +347,8 @@ public class RedisUtil {
 	 * @param outChannel
 	 * @param monAmount
 	 */
-	public static void setMonAmountOccupy(String merchNo,String outChannel,String monAmount){
-		setMonAmountOccupy(merchNo, outChannel, monAmount, 6 * 60);
+	public static void setMonAmountOccupy(String merchNo,String outChannel,String accountNo,String monAmount){
+		setMonAmountOccupy(merchNo, outChannel, accountNo,monAmount, 6 * 60);
 	}
 	
 	/**
@@ -358,9 +359,9 @@ public class RedisUtil {
 	 * @param monAmount
 	 * @param validTime 有效时间 单位秒
 	 */
-	public static void setMonAmountOccupy(String merchNo,String outChannel,String monAmount,int validTime){
-		redisTemplate.opsForHash().put(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel,
-				monAmount, DateUtil.getCurrentTimeInt() + validTime);
+	public static void setMonAmountOccupy(String merchNo,String outChannel,String accountNo,String monAmount,int validTime){
+		redisTemplate.opsForHash().put(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel +
+						RedisConstants.link_symbol + accountNo,	monAmount, DateUtil.getCurrentTimeInt() + validTime);
 	}
 	
 	/***
@@ -368,12 +369,13 @@ public class RedisUtil {
 	 * @Description 获取过期时间(剩余时间)
 	 * @param merchNo
 	 * @param outChannel
+	 * @param accountNo
 	 * @param monAmount
 	 * @return
 	 */
-	public static int getMonAmountOccupyValidTime(String merchNo,String outChannel,String monAmount){
-		Integer validTime = (Integer) redisTemplate.opsForHash().get(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel,
-				monAmount);
+	public static int getMonAmountOccupyValidTime(String merchNo,String outChannel,String accountNo,String monAmount){
+		Integer validTime = (Integer) redisTemplate.opsForHash().get(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,	monAmount);
 		return validTime == null? 0 : validTime - DateUtil.getCurrentTimeInt();
 	}
 	
@@ -385,9 +387,9 @@ public class RedisUtil {
 	 * @param monAmount
 	 * @return
 	 */
-	public static boolean ifMonAmountOccupy(String merchNo,String outChannel,String monAmount){
-		Integer validTime = (Integer) redisTemplate.opsForHash().get(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel,
-				monAmount);
+	public static boolean ifMonAmountOccupy(String merchNo,String outChannel,String accountNo,String monAmount){
+		Integer validTime = (Integer) redisTemplate.opsForHash().get(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel +
+						RedisConstants.link_symbol + accountNo,	monAmount);
 		return validTime != null && (validTime - DateUtil.getCurrentTimeInt()) > 0;
 	}
 	
@@ -397,10 +399,10 @@ public class RedisUtil {
 	 * @param merchNo
 	 * @param outChannel
 	 * @param monAmount
-	 * @param validTime 有效时间 单位秒
 	 */
-	public static void delMonAmountOccupy(String merchNo,String outChannel,String monAmount){
-		redisTemplate.opsForHash().delete(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel,monAmount);
+	public static void delMonAmountOccupy(String merchNo,String outChannel,String accountNo, String monAmount){
+		redisTemplate.opsForHash().delete(RedisConstants.cache_monAmount_occupy + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,monAmount);
 	}
 	
 	/**
@@ -410,9 +412,9 @@ public class RedisUtil {
 	 * @param monAmount
 	 * @param orderNo
 	 */
-	public static void setMonAmountOrderNo(String merchNo, String outChannel,String monAmount, String orderNo) {
-		redisTemplate.opsForHash().put(RedisConstants.cache_monAmount_orderNo + merchNo + RedisConstants.link_symbol + outChannel,
-				monAmount, orderNo);
+	public static void setMonAmountOrderNo(String merchNo, String outChannel,String accountNo,String monAmount, String orderNo) {
+		redisTemplate.opsForHash().put(RedisConstants.cache_monAmount_orderNo + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,	monAmount, orderNo);
 		
 	}
 	
@@ -423,19 +425,20 @@ public class RedisUtil {
 	 * @param outChannel
 	 * @return 
 	 */
-	public static String getMonAmountOrderNo(String merchNo, String outChannel,String monAmount) {
-		return (String) redisTemplate.opsForHash().get(RedisConstants.cache_monAmount_orderNo + merchNo + RedisConstants.link_symbol + outChannel,monAmount);		
+	public static String getMonAmountOrderNo(String merchNo, String outChannel,String accountNo,String monAmount) {
+		return (String) redisTemplate.opsForHash().get(RedisConstants.cache_monAmount_orderNo + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,monAmount);
 	}
 	
 	/**
 	 * @Description 删除支付金额订单号
 	 * @param merchNo
 	 * @param outChannel
-	 * @param orderNo
+	 * @param accountNo
 	 */
-	public static void delMonAmountOrderNo(String merchNo, String outChannel,String monAmount) {
-		redisTemplate.opsForHash().delete(RedisConstants.cache_monAmount_orderNo + merchNo + RedisConstants.link_symbol + outChannel,monAmount);
-		
+	public static void delMonAmountOrderNo(String merchNo, String outChannel,String accountNo,String monAmount) {
+		redisTemplate.opsForHash().delete(RedisConstants.cache_monAmount_orderNo + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,monAmount);
 	}
 	
 	/**
@@ -444,9 +447,9 @@ public class RedisUtil {
 	 * @param outChannel
 	 * @param businessNo
 	 */
-	public static void setQrBusinessNo(String merchNo, String outChannel,String businessNo) {
-		redisTemplate.opsForHash().put(RedisConstants.cache_qr_businessNo + merchNo + RedisConstants.link_symbol + outChannel,
-				businessNo, DateUtil.getCurrentTimeInt());
+	public static void setQrBusinessNo(String merchNo, String outChannel,String accountNo,String businessNo) {
+		redisTemplate.opsForHash().put(RedisConstants.cache_qr_businessNo + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,	businessNo, DateUtil.getCurrentTimeInt());
 	}
 	
 	/**
@@ -455,9 +458,9 @@ public class RedisUtil {
 	 * @param outChannel
 	 * @param businessNo
 	 */
-	public static boolean ifQrBusinessNo(String merchNo, String outChannel, String businessNo) {
-		return redisTemplate.opsForHash().get(RedisConstants.cache_qr_businessNo + merchNo + RedisConstants.link_symbol + outChannel,
-				businessNo) == null;
+	public static boolean ifQrBusinessNo(String merchNo, String outChannel, String accountNo, String businessNo) {
+		return redisTemplate.opsForHash().get(RedisConstants.cache_qr_businessNo + merchNo + RedisConstants.link_symbol + outChannel +
+						RedisConstants.link_symbol + accountNo, businessNo) == null;
 	}
 	
 	/**
@@ -466,16 +469,18 @@ public class RedisUtil {
 	 * @param outChannel
 	 * @param businessNo
 	 */
-	public static void delQrBusinessNo(String merchNo, String outChannel,String businessNo) {
-		redisTemplate.opsForHash().delete(RedisConstants.cache_qr_businessNo + merchNo + RedisConstants.link_symbol + outChannel,businessNo);
+	public static void delQrBusinessNo(String merchNo, String outChannel,String accountNo,String businessNo) {
+		redisTemplate.opsForHash().delete(RedisConstants.cache_qr_businessNo + merchNo + RedisConstants.link_symbol + outChannel +
+				RedisConstants.link_symbol + accountNo,businessNo);
 	}
 	
 	public static void setMerchCharge(MerchCharge merchCharge){
 		redisTemplate.opsForHash().put(RedisConstants.cache_charge +  merchCharge.getMerchNo(), merchCharge.getBusinessNo(), merchCharge);
 	}
 	
-	public static MerchCharge getMerchCharge(String merchNo,String businessNo){
-		return (MerchCharge) redisTemplate.opsForHash().get(RedisConstants.cache_charge +  merchNo, businessNo);
+	public static MerchCharge getMerchCharge(String merchNo,String accountNo,String businessNo){
+		return (MerchCharge) redisTemplate.opsForHash().get(RedisConstants.cache_charge +  merchNo +
+				RedisConstants.link_symbol + accountNo, businessNo);
 	}
 	
 	public static void delMerchCharge(MerchCharge merchCharge){

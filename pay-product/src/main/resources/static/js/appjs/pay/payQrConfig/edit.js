@@ -36,17 +36,11 @@ function validateRule() {
 	var icon = "<i class='fa fa-times-circle'></i> ";
 	$("#signupForm").validate({
 		rules : {
-			accountNo : {
-				required : true
-			},
 			accountName : {
 				required : true
 			}
 		},
 		messages : {
-			accountNo : {
-				required : icon + "请输入收款账号"
-			},
 			accountName : {
 				required : icon + "请输入收款名称"
 			}
