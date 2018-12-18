@@ -62,9 +62,9 @@ import com.qh.redis.constenum.ConfigParent;
 import com.qh.redis.service.RedisUtil;
 import com.qh.system.domain.UserDO;
 /**
- * 
+ *
  * @ClassName PayController
- * @Description pay
+ * @Description pay 对外开放，支付接口入口类
  * @Date 2017年10月24日 上午11:30:22
  * @version 1.0.0
  */
