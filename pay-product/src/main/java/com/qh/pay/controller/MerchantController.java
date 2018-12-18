@@ -40,18 +40,20 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
- * 聚富商户
+ * 商户管理
  * 
  * @date 2017-11-01 10:05:41
  */
@@ -72,8 +74,6 @@ public class MerchantController {
 	private LocationService locationService;
 	@Autowired
 	private PayConfigCompanyService payConfigCompanyService;
-
-
 
 	@GetMapping()
 	@RequiresPermissions("pay:merchant:merchant")
@@ -193,7 +193,12 @@ public class MerchantController {
 		model.addAttribute("parentPaid", parentPaid);
 		return "pay/merchant/rate";
 	}
-	
+
+	/**
+	 * 新增商户中转页面
+	 * @param model
+	 * @return
+	 */
 	@GetMapping("/add")
 	@RequiresPermissions("pay:merchant:add")
 	String add(Model model){
@@ -226,8 +231,28 @@ public class MerchantController {
 	    return "pay/merchant/add";
 	}
 
+	/**
+	 * @Description 新增全局方法，解决时间字符串解决异常
+	 * @author huangjj
+	 * @email  81476724@qq.com
+	 * @EditDate  2018年12月18日 上午11:27:37
+	 * @Content 新增方法
+	 *
+	 */
+	@InitBinder
+	public void initBinder(WebDataBinder binder, WebRequest request) {
+		//转换日期
+		DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+		// CustomDateEditor为自定义日期编辑器
+		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+	}
 
-
+	/**
+	 * 查看/修改
+	 * @param merchNo 商户号
+	 * @param model
+	 * @return
+	 */
 	@GetMapping("/edit/{merchNo}")
 	@RequiresPermissions("pay:merchant:edit")
 	String edit(@PathVariable("merchNo") String merchNo,Model model){
@@ -404,7 +429,7 @@ public class MerchantController {
 	}
 	
 	/**
-	 * 保存
+	 * 保存新增商户信息
 	 */
 	@SuppressWarnings("unchecked")
 	@ResponseBody
@@ -670,6 +695,12 @@ public class MerchantController {
 		return list;
 	}
 
+	/**
+	 * 发送邮件
+	 * @param merchNo 商户号
+	 * @param state   状态
+	 * @return
+	 */
 	@PostMapping( "/sendEmail")
 	@RequiresPermissions("pay:merchant:sendEmail")
 	@ResponseBody
@@ -682,24 +713,28 @@ public class MerchantController {
 		if(RedisUtil.getHashValue(CfgKeyConst.email_message,merchNo)!=null&&state==0){
 			return  R.error("已发送邮箱");
 		}
-
+		//商户平台登录密码
 		String password=RedisUtil.getSysConfigValue(CfgKeyConst.pass_default_merch);
 		/*if(password==null||"".equals(password)){
 			password = ParamUtil.random(100000,999999)+"";
 			merchant.setManagerPass(password);
 			merchantService.update(merchant);
 		}*/
+		// 商户接收邮件邮箱地址
 		String email =merchant.getContactsEmail();
+		// 商户私钥
 		String privateKey= RedisUtil.getHashValue(CfgKeyConst.qhPrivateKey,merchNo).toString();
 
 		ConfigDO config = (ConfigDO)RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_config, "publicKeyPath");
 		if(config==null){
 			return R.error("请先配置公钥路径！");
 		}
+		// 平台地址
 		String paydoMain = RedisUtil.getSysConfigValue(CfgKeyConst.pay_domain);
 		if(paydoMain==null||"".equals(paydoMain)){
 			return R.error("请先配置平台地址！");
 		}
+		// 组装邮件发送的html内容
 		String html =SendMailUtil.getHtml(paydoMain,config.getConfigValue(),privateKey,merchNo,password);
 		R r = SendMailUtil.sendEmail(email,html);
 		if(R.ifSucc(r)) {

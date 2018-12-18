@@ -1,6 +1,8 @@
 package com.qh.pay.controller;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,15 +13,13 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.qh.pay.api.PayConstants;
@@ -60,9 +60,11 @@ import com.qh.common.utils.R;
 import com.qh.common.utils.ShiroUtils;
 
 /**
- * 
- * 
- * @date 2018-02-24 17:25:59
+ * @Description 代理商管理
+ * @author huangjj
+ * @email  81476724@qq.com
+ * @Date ：   2018年12月18日 下午14:29:22
+ * @Content 新增注释
  */
  
 @Controller
@@ -92,7 +94,12 @@ public class AgentController {
 		model.addAttribute("status", YesNoType.descStatus());
 	    return "pay/agent/agent";
 	}
-	
+
+	/**
+	 * 查看代理商列表
+	 * @param params
+	 * @return
+	 */
 	@ResponseBody
 	@GetMapping("/list")
 	@RequiresPermissions("pay:agent:agent")
@@ -119,7 +126,12 @@ public class AgentController {
 		PageUtils pageUtils = new PageUtils(agentList, total);
 		return pageUtils;
 	}
-	
+
+	/**
+	 * 添加代理商中转
+	 * @param model
+	 * @return
+	 */
 	@GetMapping("/add")
 	@RequiresPermissions("pay:agent:add")
 	String add(Model model){
@@ -143,6 +155,22 @@ public class AgentController {
         model.addAttribute("paymentMethods", PaymentMethod.desc());
         model.addAttribute("outChannels", OutChannel.desc());
 	    return "pay/agent/add";
+	}
+
+	/**
+	 * @Description 新增全局方法，解决时间字符串解决异常
+	 * @author huangjj
+	 * @email  81476724@qq.com
+	 * @EditDate  2018年12月18日 上午11:27:37
+	 * @Content 新增方法
+	 *
+	 */
+	@InitBinder
+	public void initBinder(WebDataBinder binder, WebRequest request) {
+		//转换日期
+		DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+		// CustomDateEditor为自定义日期编辑器
+		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
 	}
 
 	@GetMapping("/edit/{agentId}")
@@ -313,7 +341,7 @@ public class AgentController {
 	}
 	
 	/**
-	 * 保存
+	 * 保存新增代理商信息
 	 */
 	@SuppressWarnings("unchecked")
 	@ResponseBody
