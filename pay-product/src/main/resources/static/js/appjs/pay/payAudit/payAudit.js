@@ -12,6 +12,8 @@ $(function() {
 		  minView: 2,
 		  forceParse: 0
 	});
+	// 默认填充查询开始时间
+    $("#beginDate").val(formatDate(new Date()));
 	$("#endDate").val(formatDate(new Date()));
 //	$('#auditType').val(0);
 	$('#auditResult').val(0);

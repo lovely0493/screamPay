@@ -100,14 +100,24 @@ public class TrademanagerController {
         this.pageQueryInit(model,OrderType.charge.id());
         return "trademanager/charge";
     }
-    //代付
+
+    /**
+     * 代付交易查询
+     * @param model
+     * @return
+     */
     @GetMapping("/acp")
     @RequiresPermissions("trademanager:acp")
     public String acp(Model model){
         this.pageQueryInit(model,OrderType.acp.id());
         return "trademanager/acp";
     }
-    //提现
+
+    /**
+     * 提现交易查询
+     * @param model
+     * @return
+     */
     @GetMapping("/withdraw")
     @RequiresPermissions("trademanager:withdraw")
     public String withdraw(Model model){
