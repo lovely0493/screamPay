@@ -17,6 +17,7 @@ import com.qh.pay.api.Order;
 import com.qh.pay.api.constenum.PayCompany;
 import com.qh.pay.domain.MerchUserSignDO;
 import com.qh.paythird.PayBaseService;
+import com.qh.paythird.allipay.AllipayService;
 import com.qh.paythird.baiXingDa.BaiXingDaService;
 import com.qh.paythird.beecloud.BeeCloudService;
 import com.qh.paythird.bopay.BopayService;
@@ -71,6 +72,8 @@ public class PayBaseServiceImpl implements PayBaseService{
 	private SandPayService sandPayService;
 	@Autowired
 	private WeiFuTongService weiFuTongService;
+	@Autowired
+	private AllipayService allipayService;
 
 	/* (非 Javadoc)
 	 * Description:
@@ -86,9 +89,11 @@ public class PayBaseServiceImpl implements PayBaseService{
 			return result;
 		}
 		String payMerch =order.getPayMerch();
+		/* 魔幻代码，这是为了兼容某个垃圾支付公司写的代码，可以忽略*/
 		if(payMerch.contains("_")) {
 			order.setPayMerch(payMerch.substring(0,payMerch.indexOf("_")));
 		}
+		/* 结束魔幻代码 */
 		switch (company) {
 			case ysb:
 				result = yinShengBaoService.order(order);
@@ -131,6 +136,9 @@ public class PayBaseServiceImpl implements PayBaseService{
 				break;
 			case wft:
 				result = weiFuTongService.order(order);
+				break;
+			case allipay:
+				result = allipayService.order(order);
 				break;
 			default:
 				logger.error("未找到支付公司！");
@@ -202,6 +210,9 @@ public class PayBaseServiceImpl implements PayBaseService{
 			case wft:
 				result = weiFuTongService.notify(order,request,requestBody);
 				break;
+			case allipay:
+				result = allipayService.notify(order, request);
+				break;
 			default:
 				logger.error("未找到支付公司！");
 				result = R.error("未找到支付公司！");
@@ -270,6 +281,9 @@ public class PayBaseServiceImpl implements PayBaseService{
 				break;
 			case wft:
 				result = weiFuTongService.query(order);
+				break;
+			case allipay:
+				result = allipayService.query(order);
 				break;
 			default:
 				logger.error("未找到支付公司！");
