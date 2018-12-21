@@ -11,6 +11,8 @@
 
 > [screamPay开发社区：]开发中
 
+> [screamPay demo系统：] https://github.com/star-ruijie/screamPayDemo
+
 > [screamPay支付体验：]开发中
 
 > [screamPay运营平台演示：]开发中
