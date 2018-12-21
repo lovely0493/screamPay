@@ -1,6 +1,8 @@
 package com.qh.query.controller;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,8 +14,10 @@ import com.qh.pay.domain.Merchant;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import com.qh.common.utils.PageUtils;
@@ -37,6 +41,7 @@ import com.qh.query.service.OrderQueryService;
 import com.qh.redis.RedisConstants;
 import com.qh.redis.service.RedisUtil;
 import com.qh.system.domain.UserDO;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * @ClassName OrderQueryController
@@ -585,6 +590,21 @@ public class OrderQueryController {
 		return R.okData(fdo);
 	}
 
+	/**
+	 * @Description 新增全局方法，解决时间字符串解决异常
+	 * @author huangjj
+	 * @email  81476724@qq.com
+	 * @EditDate  2018年12月18日 上午11:27:37
+	 * @Content 新增方法
+	 *
+	 */
+	@InitBinder
+	public void initBinder(WebDataBinder binder, WebRequest request) {
+		//转换日期
+		DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+		// CustomDateEditor为自定义日期编辑器
+		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+	}
 
 	/***
 	 * 

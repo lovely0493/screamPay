@@ -1,19 +1,19 @@
 package com.qh.trademanager.controller;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 
 import com.qh.common.utils.PageUtils;
 import com.qh.common.utils.Query;
@@ -40,7 +40,16 @@ import com.qh.pay.service.AgentService;
 import com.qh.pay.service.MerchantService;
 import com.qh.system.domain.UserDO;
 import com.qh.trademanager.querydao.TrademanagerQueryDao;
+import org.springframework.web.context.request.WebRequest;
 
+/**
+ * @Description 交易查询管理
+ * @author huangjj
+ * @email  81476724@qq.com
+ * @EditDate  2018年12月18日 上午11:19:37
+ * @Content 新增注释
+ *
+ */
 @Controller
 @RequestMapping("/trademanager")
 public class TrademanagerController {
@@ -54,13 +63,36 @@ public class TrademanagerController {
 	private MerchantService merchantService;
     @Autowired
     private AgentService agentService;
-    //交易
+
+    /**
+     * 支付交易查询
+     * @param model
+     * @return
+     */
     @GetMapping("/pay")
     @RequiresPermissions("trademanager:pay")
     public String pay(Model model){
+        // 调用具体支付交易查询方法
         this.pageQueryInit(model,OrderType.pay.id());
         return "trademanager/pay";
     }
+
+    /**
+     * @Description 新增全局方法，解决时间字符串解决异常
+     * @author huangjj
+     * @email  81476724@qq.com
+     * @EditDate  2018年12月18日 上午11:27:37
+     * @Content 新增方法
+     *
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder, WebRequest request) {
+        //转换日期
+        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+        // CustomDateEditor为自定义日期编辑器
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+    }
+
     //充值
     @GetMapping("/charge")
     @RequiresPermissions("trademanager:charge")
@@ -68,14 +100,24 @@ public class TrademanagerController {
         this.pageQueryInit(model,OrderType.charge.id());
         return "trademanager/charge";
     }
-    //代付
+
+    /**
+     * 代付交易查询
+     * @param model
+     * @return
+     */
     @GetMapping("/acp")
     @RequiresPermissions("trademanager:acp")
     public String acp(Model model){
         this.pageQueryInit(model,OrderType.acp.id());
         return "trademanager/acp";
     }
-    //提现
+
+    /**
+     * 提现交易查询
+     * @param model
+     * @return
+     */
     @GetMapping("/withdraw")
     @RequiresPermissions("trademanager:withdraw")
     public String withdraw(Model model){

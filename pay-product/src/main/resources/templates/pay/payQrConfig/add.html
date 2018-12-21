@@ -10,11 +10,11 @@
 					<div class="ibox-content">
 						<form class="form-horizontal m-t" id="signupForm">
 							<div class="form-group">	
-								<label class="col-sm-2 control-label">商户号：</label>
+								<label class="col-sm-2 control-label">商户号*：</label>
 								<div class="col-sm-4">
 									<input id="merchNo" name="merchNo" class="form-control" type="text" maxlength="10" th:value="${merchNo}" th:readonly = "${merchNo}" >
 								</div>
-								<label class="col-sm-2 control-label">支付渠道：</label>
+								<label class="col-sm-2 control-label">支付渠道*：</label>
 								<div class="col-sm-4">
 									<select id="outChannel" name="outChannel" class="form-control">
 										<option value="">请选择</option>
@@ -23,21 +23,21 @@
 								</div>
 							</div>
 							<div class="form-group">	
-								<label class="col-sm-2 control-label">收款账号：</label>
+								<label class="col-sm-2 control-label">收款账号*：</label>
 								<div class="col-sm-4">
 									<input id="accountNo" name="accountNo" class="form-control" type="text" maxlength="20">
 								</div>
-								<label class="col-sm-2 control-label">收款名称：</label>
+								<label class="col-sm-2 control-label">收款名称*：</label>
 								<div class="col-sm-4">
 									<input id="accountName" name="accountName" class="form-control" type="text" maxlength="20">
 								</div>
 							</div>
 							<div class="form-group">	
-								<label class="col-sm-2 control-label">成本费率：</label>
+								<label class="col-sm-2 control-label">成本费率*：</label>
 								<div class="col-sm-4">
 									<input id="costRate" name="costRate" class="form-control" type="number" max="0.02" min="0" maxlength="6" required="required">
 								</div>
-								<label class="col-sm-2 control-label">手续费率：</label>
+								<label class="col-sm-2 control-label">手续费率*：</label>
 								<div class="col-sm-4">
 									<input id="jfRate" name="jfRate" class="form-control" type="number" max="0.03" min="0" maxlength="6" required="required">
 								</div>

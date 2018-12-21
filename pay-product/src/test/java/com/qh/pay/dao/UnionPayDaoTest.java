@@ -36,12 +36,12 @@ public class UnionPayDaoTest {
         System.out.println(unionPayDao.listByCity("110100"));
         System.out.println(unionPayDao.listByBankAndCity("ICBC","110100"));
 
-        System.out.println("------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------");
 
         System.out.println(provinceDao.list());
         System.out.println(provinceDao.get("110000"));
 
-        System.out.println("------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------");
 
         System.out.println(cityDao.list());
         System.out.println(cityDao.listByProvinceId("120000"));

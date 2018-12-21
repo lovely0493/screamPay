@@ -1,6 +1,8 @@
 package com.qh.moneyacct.controller;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,14 +11,11 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 
 import com.qh.common.utils.PageUtils;
 import com.qh.common.utils.Query;
@@ -46,7 +45,16 @@ import com.qh.pay.service.AgentService;
 import com.qh.pay.service.MerchantService;
 import com.qh.redis.service.RedisUtil;
 import com.qh.system.domain.UserDO;
+import org.springframework.web.context.request.WebRequest;
 
+/**
+ * @Description 钱包账户
+ * @author huangjj
+ * @email  81476724@qq.com
+ * @EditDate  2018年12月18日 下午13:58:31
+ * @Content 新增注释
+ *
+ */
 @Controller
 @RequestMapping("/moneyacct")
 public class MoneyacctController {
@@ -65,8 +73,12 @@ public class MoneyacctController {
     private RcFoundBalDao rcFoundBalDao;
     @Autowired
     private RcPayMerchBalDao rcPayMerchBalDao;
-    
-    //聚富钱包
+
+    /**
+     * 平台钱包
+     * @param model
+     * @return
+     */
     @GetMapping("/jfmoney")
     @RequiresPermissions("moneyacct:jfmoney")
     public String jfmoney(Model model){
@@ -99,6 +111,23 @@ public class MoneyacctController {
         }
         return "moneyacct/jfmoney";
     }
+
+    /**
+     * @Description 新增全局方法，解决时间字符串解决异常
+     * @author huangjj
+     * @email  81476724@qq.com
+     * @EditDate  2018年12月18日 上午11:27:37
+     * @Content 新增方法
+     *
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder, WebRequest request) {
+        //转换日期
+        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+        // CustomDateEditor为自定义日期编辑器
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+    }
+
     @ResponseBody
     @GetMapping("/jfmoney/detailList")
     @RequiresPermissions("moneyacct:jfmoney")
@@ -164,8 +193,12 @@ public class MoneyacctController {
         
         return R.okData(fdo);
     }
-    
-    //第三方账户钱包
+
+    /**
+     * 第三方账户钱包
+     * @param model
+     * @return
+     */
     @GetMapping("/payMerch")
     @RequiresPermissions("moneyacct:payMerch")
     public String payMerch(Model model){
@@ -297,8 +330,12 @@ public class MoneyacctController {
         PageUtils pageUtils = new PageUtils(moneyaccts, total);
         return pageUtils;
     }
-    
-    //商户钱包
+
+    /**
+     * 商户钱包
+     * @param model
+     * @return
+     */
     @GetMapping("/merchant")
     @RequiresPermissions("moneyacct:merchant")
     public String merchant(Model model){
@@ -551,8 +588,12 @@ public class MoneyacctController {
         FooterDO fdo = rcMerchantDao.findMerchantDetailListFooter(params);
         return R.okData(fdo);
     }
-    
-    //*****************************代理商钱包
+
+    /**
+     * 代理商钱包
+     * @param model
+     * @return
+     */
     @GetMapping("/agent")
     @RequiresPermissions("moneyacct:agent")
     public String agent(Model model){

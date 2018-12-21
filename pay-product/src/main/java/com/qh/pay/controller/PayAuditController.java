@@ -1,5 +1,7 @@
 package com.qh.pay.controller;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -8,13 +10,11 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 
 import com.qh.pay.api.Order;
 import com.qh.pay.api.constenum.AuditResult;
@@ -39,6 +39,7 @@ import com.qh.common.utils.PageUtils;
 import com.qh.common.utils.Query;
 import com.qh.common.utils.R;
 import com.qh.common.utils.ShiroUtils;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * 支付审核
@@ -57,6 +58,13 @@ public class PayAuditController {
 	private MerchantService merchantService;
 	@Autowired
 	private AgentService agentService;
+
+	/**
+	 * 支付审核查询
+	 * @param model
+	 * @param orderType
+	 * @return
+	 */
 	@GetMapping()
 	@RequiresPermissions("pay:payAudit:payAudit")
 	String PayAudit(Model model,String orderType){
@@ -72,6 +80,22 @@ public class PayAuditController {
 		}
 		model.addAttribute("payConfigCompany", list);
 	    return "pay/payAudit/payAudit";
+	}
+
+	/**
+	 * @Description 新增全局方法，解决时间字符串解决异常
+	 * @author huangjj
+	 * @email  81476724@qq.com
+	 * @EditDate  2018年12月18日 上午11:27:37
+	 * @Content 新增方法
+	 *
+	 */
+	@InitBinder
+	public void initBinder(WebDataBinder binder, WebRequest request) {
+		//转换日期
+		DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+		// CustomDateEditor为自定义日期编辑器
+		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
 	}
 	
 	@ResponseBody
