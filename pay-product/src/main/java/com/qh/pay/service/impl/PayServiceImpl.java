@@ -251,6 +251,8 @@ public class PayServiceImpl implements PayService {
 				if (R.ifSucc(r)) {
 					@SuppressWarnings("unchecked")
 					Map<String, String> data = (Map<String, String>) r.get(Constant.result_data);
+					data.put("merchNo", merchNo);
+					data.put("orderNo", orderNo);
 					order.setResultMap(data);
 					RedisUtil.setOrder(order);
 					
