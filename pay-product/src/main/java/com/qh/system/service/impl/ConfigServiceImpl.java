@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.qh.common.config.CfgKeyConst;
 import com.qh.pay.api.utils.QhPayUtil;
 import com.qh.redis.RedisConstants;
 import com.qh.redis.service.RedisUtil;
@@ -52,20 +53,20 @@ public class ConfigServiceImpl implements ConfigService {
     public ConfigDO update(ConfigDO config) {
         
         String configValue = config.getConfigValue();
-    	if(config.getConfigItem().equals("privateKeyPath") || config.getConfigItem().equals("publicKeyPath")) {
+    	if(config.getConfigItem().equals(CfgKeyConst.platformPrivateKey) || config.getConfigItem().equals(CfgKeyConst.platformPublicKey)) {
     		config.setConfigValue("");
         }
     	RedisUtil.syncConfig(config, false);
         configDao.update(config);
         config.setConfigValue(configValue);
         RedisUtil.getRedisTemplate().opsForHash().put(RedisConstants.cache_config, config.getConfigItem(), config);
-        if(config.getConfigItem().equals("privateKeyPath")) {
+        if(config.getConfigItem().equals(CfgKeyConst.platformPrivateKey)) {
     		QhPayUtil.setQhPrivateKey(configValue);
-        }else if(config.getConfigItem().equals("publicKeyPath")) {
+        }else if(config.getConfigItem().equals(CfgKeyConst.platformPublicKey)) {
         	QhPayUtil.setQhPublicKey(configValue);
-        }else if(config.getConfigItem().equals("merchNoPrefix")) {
+        }else if(config.getConfigItem().equals(CfgKeyConst.merchNoPrefix)) {
         	QhPayUtil.setMerchNoPrefix(configValue);
-        }else if(config.getConfigItem().equals("agentNoPrefix")) {
+        }else if(config.getConfigItem().equals(CfgKeyConst.agentNoPrefix)) {
         	QhPayUtil.setAgentNoPrefix(configValue);
         }
         return config;

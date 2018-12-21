@@ -13,38 +13,42 @@ public class CfgKeyConst {
     public static final String payFilePath = "payFilePath";
     /***通道分类**/
     public static final String pay_channel_type = "pay_channel_type";
-    /***聚富公钥***/
+    /***平台公钥***/
     public static final String qhPublicKey = "qhPublicKey";
-    /***聚富私钥***/
+    /***平台私钥***/
     public static final String qhPrivateKey = "qhPrivateKey";
     /***发送邮箱信息***/
     public static final String email_message = "email_message";
 
-    /***聚富公钥路径****/
-    public static final String  publicKeyPath = "publicKeyPath";
-    /***聚富私钥路径****/
-    public static final String privateKeyPath = "privateKeyPath";
-    /***聚富商户默认密码***/
+    /***平台公钥路径****/
+    public static final String platformPublicKey = "platformPublicKey";
+    /***平台私钥路径****/
+    public static final String platformPrivateKey = "platformPrivateKey";
+    /*** 商户前缀 ***/
+    public static final String merchNoPrefix = "merchNoPrefix";
+    /*** 代理商前缀 ***/
+    public static final String agentNoPrefix = "agentNoPrefix";
+    /***平台商户默认密码***/
     public static final String pass_default_merch = "pass_default_merch";
-    /***聚富商户默认状态***/
+    /***平台商户默认状态***/
     public static final String state_default_merch = "state_default_merch";
-    /***聚富支付域名****/
+    /***平台支付域名****/
     public static final String pay_domain = "pay_domain";
-    /***聚富前台回调设置***/
+    /***平台前台回调设置***/
     public static final String pay_return_url = "pay_return_url";
-    /***聚富后台通知设置***/
+    /***平台后台通知设置***/
     public static final String pay_notify_url = "pay_notify_url";
-    /***聚富支付跳转中间页面***/
+    /***平台支付跳转中间页面***/
     public static final String pay_jump_url = "pay_jump_url";
-    /***聚富支付跳转绑卡页面***/
+    /***平台支付跳转绑卡页面***/
     public static final String pay_card_url = "pay_card_url";
-    /***聚富扫码通道跳转扫码页面**********/
+    /***平台扫码通道跳转扫码页面**********/
     public static final String pay_qr_url = "pay_qr_url";
-    /***聚富代付前台回调设置***/
+    /***平台代付前台回调设置***/
     public static final String pay_acp_return_url = "pay_acp_return_url";
-    /***聚富代付后台通知设置***/
+    /***平台代付后台通知设置***/
     public static final String pay_acp_notify_url = "pay_acp_notify_url";
-    /***聚富扫码通道二维码路径***/
+    /***平台扫码通道二维码路径***/
     public static final String qr_money_path = "qr_money_path";
 
     /***使用哪个短信发送平台***/
