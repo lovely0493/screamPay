@@ -13,9 +13,9 @@
 
 > [screamPay demo系统：] https://github.com/star-ruijie/screamPayDemo
 
-> [screamPay支付体验：]开发中
+> [screamPay支付体验：]  http://screampaydemo.1goldedu.cn/ScreamPayDemo/jsp/pay.jsp
 
-> [screamPay运营平台演示：]开发中
+> [screamPay运营平台演示：]  http://screampay.1goldedu.cn  (只开放商户登录) 用户名／密码   JFSH4409/123456  可以查看测试的订单
 
 > [screamPay文档库：]开发中
 
