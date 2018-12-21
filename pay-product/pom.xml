@@ -83,6 +83,7 @@
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
+			<version>${commons-configuration.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -269,6 +270,7 @@
 		<dependency>
 	    	<groupId>com.netflix.archaius</groupId>
 	    	<artifactId>archaius-core</artifactId>
+	    	<version>0.7.5</version>
 		</dependency>
 		
 		<dependency>
