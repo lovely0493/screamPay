@@ -4,15 +4,15 @@ logging:
 spring:
   read-dataSource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/pay_crypto?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
-    username: pay_crypto
-    password: pay_crypto
+    url: jdbc:mysql://localhost:33068/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
+    username: wude
+    password: I79XXE^%5yUALO
   dataSource:
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/pay_crypto?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
-    username: pay_crypto
-    password: pay_crypto
+    url: jdbc:mysql://localhost:33068/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
+    username: wude
+    password: I79XXE^%5yUALO
     initialSize: 1
     minIdle: 3
     maxActive: 20
