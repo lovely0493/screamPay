@@ -9,7 +9,6 @@ import com.qh.pay.api.constenum.AcctType;
 import com.qh.pay.api.constenum.AgentLevel;
 import com.qh.pay.api.constenum.AuditResult;
 import com.qh.pay.api.constenum.BankCode;
-import com.qh.pay.api.constenum.CardType;
 import com.qh.pay.api.constenum.CertType;
 import com.qh.pay.api.constenum.OutChannel;
 import com.qh.pay.api.constenum.PayChannelType;
@@ -22,7 +21,6 @@ import com.qh.pay.api.utils.ParamUtil;
 import com.qh.pay.api.utils.QhPayUtil;
 import com.qh.pay.api.utils.RSAUtil;
 import com.qh.pay.domain.Agent;
-import com.qh.pay.domain.IndustryDO;
 import com.qh.pay.domain.Merchant;
 import com.qh.pay.domain.PayAcctBal;
 import com.qh.pay.domain.PayConfigCompanyDO;
@@ -39,6 +37,8 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -61,6 +61,8 @@ import java.util.*;
 @Controller
 @RequestMapping("/pay/merchant")
 public class MerchantController {
+	private static final Logger logger = LoggerFactory.getLogger(MerchantController.class);
+
 	@Autowired
 	private MerchantService merchantService;
 	@Autowired
@@ -504,7 +506,6 @@ public class MerchantController {
 	/**
 	 * 修改实名
 	 */
-	@SuppressWarnings("unchecked")
 	@ResponseBody
 	@RequestMapping("/updateRealName")
 	@RequiresPermissions("pay:merchant:edit")
@@ -736,6 +737,7 @@ public class MerchantController {
 		}
 		// 组装邮件发送的html内容
 		String html =SendMailUtil.getHtml(paydoMain,config.getConfigValue(),privateKey,merchNo,password);
+		logger.info("merchNo="+merchNo+ ";privateKey="+privateKey);
 		R r = SendMailUtil.sendEmail(email,html);
 		if(R.ifSucc(r)) {
 			RedisUtil.setHashValue(CfgKeyConst.email_message,merchNo,html);

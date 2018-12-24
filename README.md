@@ -17,7 +17,9 @@
 
 > [screamPay运营平台演示：]  http://screampay.1goldedu.cn  (只开放商户登录) 用户名／密码   JFSH4409/123456  可以查看测试的订单
 
-> [screamPay文档库：]开发中
+> [screamPay商户对接API文档：] https://github.com/star-ruijie/screamPay/blob/master/screamPay_API.docx 
+
+> [screamPay使用手册：]  https://github.com/star-ruijie/screamPay/blob/master/user_guide.docx
 
 ### 版本更新
 ***
