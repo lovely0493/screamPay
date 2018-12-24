@@ -13,9 +13,9 @@ public class CfgKeyConst {
     public static final String payFilePath = "payFilePath";
     /***通道分类**/
     public static final String pay_channel_type = "pay_channel_type";
-    /***平台公钥***/
+    /***商户公钥关键字前缀***/
     public static final String qhPublicKey = "qhPublicKey";
-    /***平台私钥***/
+    /***商户私钥关键字前缀***/
     public static final String qhPrivateKey = "qhPrivateKey";
     /***发送邮箱信息***/
     public static final String email_message = "email_message";

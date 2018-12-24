@@ -101,7 +101,7 @@ public class QhPayUtil {
 	 */
 	public static String getQhPublicKey(){
 		if("".equals(QhPayUtil.qhPublicKey)) {
-			ConfigDO config = (ConfigDO)RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_config, "publicKeyPath");
+			ConfigDO config = (ConfigDO)RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_config, CfgKeyConst.platformPublicKey);
 			if(config!=null) {
 				QhPayUtil.setQhPublicKey(config.getConfigValue());
 			}
