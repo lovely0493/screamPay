@@ -725,7 +725,7 @@ public class MerchantController {
 		// 商户私钥
 		String privateKey= RedisUtil.getHashValue(CfgKeyConst.qhPrivateKey,merchNo).toString();
 
-		ConfigDO config = (ConfigDO)RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_config, "publicKeyPath");
+		ConfigDO config = (ConfigDO)RedisUtil.getRedisTemplate().opsForHash().get(RedisConstants.cache_config, CfgKeyConst.platformPublicKey);
 		if(config==null){
 			return R.error("请先配置公钥路径！");
 		}
