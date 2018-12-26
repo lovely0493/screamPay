@@ -224,10 +224,7 @@ public class PayServiceImpl implements PayService {
 	        	}
 				logger.info("============================3====================================="+DateUtil.getCurrentNumStr());
 				R r;
-				//个人通道校验
-				if(merchant.getChannelSwitch() == null || !merchant.getChannelSwitch().containsKey(order.getOutChannel())){
-					return R.error(merchNo + "," + order.getOutChannel() + "通道关闭！");
-				}
+
 				if (OutChannel.jfDesc().containsKey(order.getOutChannel())) {
 					//扫码通道订单处理
 					r = payQrService.qrOrder(order,merchant);
@@ -235,8 +232,11 @@ public class PayServiceImpl implements PayService {
 						payQrService.releaseMonAmount(order);
 					}
 					order.setPayCompany(PayCompany.jf.name());
-					order.setPayMerch(merchNo);
 				}else{
+					//通道是否开启
+					if(merchant.getChannelSwitch() == null || !merchant.getChannelSwitch().containsKey(order.getOutChannel())){
+						return R.error(merchNo + "," + order.getOutChannel() + "通道关闭！");
+					}
 					//检查支付规则
 					r = this.checkCfgComp(order);
 					logger.info("===================================4=============================="+DateUtil.getCurrentNumStr());
