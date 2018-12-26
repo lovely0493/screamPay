@@ -191,8 +191,8 @@ public class PayHandlerServiceImpl implements PayHandlerService{
 		order.setOrderNo(jo.getString(OrderParamKey.orderNo.name()));
 		if (ParamUtil.isEmpty(order.getOrderNo())) {
 			return "订单号orderNo为空";
-		}else if(order.getOrderNo().length() > 20){
-			return "订单号orderNo不超过20位";
+		}else if(order.getOrderNo().length() > 32){
+			return "订单号orderNo不超过32位";
 		}
 		// 标题
 		order.setTitle(jo.getString(OrderParamKey.title.name()));

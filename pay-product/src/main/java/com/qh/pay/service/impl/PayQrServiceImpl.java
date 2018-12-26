@@ -514,9 +514,20 @@ public class PayQrServiceImpl implements PayQrService {
 		if (ParamUtil.isNotEmpty(order.getMsg()) && order.getMsg().length() > 50) {
 			order.setMsg(order.getMsg().substring(0, 50));
 		}
-		//设置清算状态
-		order.setClearState(ClearState.succ.id());
-		payOrderDao.save(order);
+		
+		int orderState = order.getOrderState();
+		if (orderState == OrderState.succ.id()) {
+			//设置清算状态
+			order.setClearState(ClearState.succ.id());
+		}
+		
+		payOrderDao.update(order);
+		
+		/* 支付成功才需要结算手续费等，否则直接返回 */
+		if (orderState != OrderState.succ.id()) {
+			return true;
+		}
+		
 		//如果没有手续费用，直接返回
 		if(order.getQhAmount().compareTo(BigDecimal.ZERO) == 0 ){
 			return true;
