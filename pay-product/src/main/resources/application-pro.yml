@@ -5,14 +5,14 @@ spring:
   read-dataSource:
     driverClassName: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:33068/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
-    username: wude
-    password: I79XXE^%5yUALO
+    username: root
+    password: 123456
   dataSource:
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:33068/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
-    username: wude
-    password: I79XXE^%5yUALO
+    username: root
+    password: 123456
     initialSize: 1
     minIdle: 3
     maxActive: 20
