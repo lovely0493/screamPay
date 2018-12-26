@@ -339,6 +339,7 @@ public class PayQrController {
         if ("timePost".equals(todo)) {
             return syncCheck(merchNo,outChannel,accountNo,request);
         }else if("up".equals(todo)){
+            logger.info("个码支付异步回调："+merchNo + "    " + outChannel + "     "+ accountNo);
             //回调验签
             if (verifySign(merchNo, outChannel, accountNo,request)) {
                 //业务逻辑处理
@@ -362,14 +363,11 @@ public class PayQrController {
     
     
     private JSONObject syncCheck(String merchNo,String outChannel,String accountNo,HttpServletRequest request) {
-        String v = request.getParameter("v");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
         Date date = new Date();
         JSONObject jsonObj = new JSONObject();
-        jsonObj.put("S", "0");
+        jsonObj.put("code", "0");
         jsonObj.put("msg", "timepost do nothing");
-        jsonObj.put("T", sdf.format(date));
-        jsonObj.put("V", v);
+        jsonObj.put("time", date.getTime() / 1000);
         RedisUtil.setQrGatewayLastSyncTime(merchNo,outChannel,accountNo,date.getTime());
         logger.info(""+merchNo + "    " + outChannel + "     "+ accountNo);
         logger.info(""+RedisUtil.getQrGatewayLastSyncTime(merchNo, outChannel,accountNo));
