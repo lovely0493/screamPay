@@ -32,6 +32,15 @@ body{
 	text-align:center;
 	color: #777;
 }
+#qr_content ul li.normal a{
+    display: block;
+    height: 2rem;
+    line-height: 2rem;
+    width: 60%;
+    background: #c00;
+    margin: 1rem auto;
+    color: white;
+}
 #qr_content ul li.clipTag{
 	width: 12rem;
 	height: 12rem;
@@ -89,7 +98,7 @@ body{
 }
 
 /*
-	Òýµ¼
+	ï¿½ï¿½ï¿½ï¿½
 */
 #black_YingDao{
     position: absolute;

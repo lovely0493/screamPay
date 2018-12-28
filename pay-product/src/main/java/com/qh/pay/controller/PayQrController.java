@@ -4,7 +4,7 @@ package com.qh.pay.controller;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
+import com.qh.common.config.CfgKeyConst;
 import com.qh.common.config.Constant;
 import com.qh.common.utils.R;
 import com.qh.common.utils.ShiroUtils;
@@ -217,7 +218,19 @@ public class PayQrController {
 		return payQrService.getChargeMon(monAmount,merchNo,outChannel);
 	}
 
+    /**
+     * @param context
+     * @return
+     * @Description 支付通道扫码界面跳转
+     */
+    @GetMapping("/aliQrcode")
+    public String aliQrcode(@RequestParam("orderNo") String orderNo, @RequestParam("merchNo") String merchNo) {
+        logger.info("支付宝个码免签请求支付开始。。。");
 
+		
+        return PayConstants.url_pay_aliQrcode;
+    }
+    
     /**
      * @param context
      * @return
@@ -226,14 +239,15 @@ public class PayQrController {
     @GetMapping("/qr")
     public String qr(@RequestParam(PayConstants.web_context) String context, Model model) {
         logger.info(PayConstants.web_context + ":" + context);
+        String contextPlain = null;
         if (ParamUtil.isNotEmpty(context)) {
 			try {
-				context = new String(
+				contextPlain = new String(
 						RSAUtil.decryptByPrivateKey(Base64Utils.decode(context), QhPayUtil.getQhPrivateKey()));
 			} catch (Exception e) {
 				model.addAttribute(Constant.result_msg, "解密异常！");
 			}
-			JSONObject jo = JSONObject.parseObject(context);
+			JSONObject jo = JSONObject.parseObject(contextPlain);
 			String merchNo = jo.getString(OrderParamKey.merchNo.name());
 			String orderNo = jo.getString(OrderParamKey.orderNo.name());
             Order order = RedisUtil.getOrder(merchNo, orderNo);
@@ -243,12 +257,16 @@ public class PayQrController {
             }
             model.addAttribute("merchNo", merchNo);
             model.addAttribute("orderNo", orderNo);
+            model.addAttribute("userid", order.getPayMerch());
             model.addAttribute("amount", order.getRealAmount().toPlainString());
             model.addAttribute("outChannel", order.getOutChannel());
             model.addAttribute("outChannelDesc", OutChannel.jfDesc());
             model.addAttribute("company", order.getPayCompany());
+            
             int remainSec = RedisUtil.getMonAmountOccupyValidTime(merchNo, order.getOutChannel(), order.getPayMerch(),order.getRealAmount().toPlainString());
+            model.addAttribute("remainSec", remainSec);
             model.addAttribute("returnUrl", order.getReturnUrl());
+            
             if (remainSec <= 0) {
                 remainSec = 0;
                 model.addAttribute("msg", "订单已经过期");
@@ -263,8 +281,16 @@ public class PayQrController {
             		model.addAttribute(PayConstants.qr_any_money_flag, YesNoType.yes.id());
             	}
             	
+            	if (order.getOutChannel().equals(OutChannel.jfali.name())) {
+					try {
+						model.addAttribute("qrcode_url", RedisUtil.getSysConfigValue(CfgKeyConst.pay_domain) + "pay/qr/?context=" + URLEncoder.encode(context, Constant.ec_utf_8));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+                	return PayConstants.url_pay_aliQrcode;
+            	}
             }
-            model.addAttribute("remainSec", remainSec);
             return PayConstants.url_pay_qr;
         }
         model.addAttribute(Constant.result_msg, "请勿频繁测试！");

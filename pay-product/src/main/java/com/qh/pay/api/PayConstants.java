@@ -50,6 +50,8 @@ public class PayConstants {
     public final static String url_pay_card = "pay/card";
     /***支付跳转扫码通道界面****/
     public final static String url_pay_qr = "pay/qr";
+    /***支付宝跳转扫码通道界面****/
+    public final static String url_pay_aliQrcode = "pay/aliQrcode";
     /***支付跳转充值（扫码通道）****/
     public final static String url_pay_charge = "pay/charge";
     /***支付跳转充值（扫码通道） 管理员人工充值入口****/

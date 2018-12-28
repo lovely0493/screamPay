@@ -185,7 +185,7 @@ public class PayQrServiceImpl implements PayQrService {
         Map<String, String> resultMap = PayService.initRspData(order);
         try {
             //支付扫码通道
-            resultMap.put(PayConstants.web_code_url, PayService.commonQrUrl(order));
+	        resultMap.put(PayConstants.web_code_url, PayService.commonQrUrl(order));
             //返回真正的金额
             resultMap.put(OrderParamKey.amount.name(), order.getRealAmount().toPlainString());
         } catch (Exception e) {
