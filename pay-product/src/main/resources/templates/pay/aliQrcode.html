@@ -41,7 +41,7 @@
 			<img ng-show="timeEnouth" style="border: 0px;position: absolute;left: -94px;clip: rect(1px 333px 366px 1px);width: 400px;height: 480px;" class="clipImg ng-hide">
 		</li>
 		<li class="normal">			
-			<a th:href="@{'alipayqr://platformapi/startapp?saId=10000007&qrcode=' + qrcode_url}"  target="_self">跳转支付宝</a>
+			<a th:href="${'alipayqr://platformapi/startapp?saId=10000007&qrcode=' + qrcode_url}"  target="_self">跳转支付宝</a>
 		</li>
 		<li class="qr_time ng-hide" ng-show="timeEnouth">支付剩余时间 <span ng-bind="printTime"></span></li>
 		<li class="normal">请在倒计时间内完成支付，否则将无法到账！</li>
@@ -105,18 +105,22 @@ function isWxBrowser(){
 	return false;
 }
 
-function isAliOrWxBrowser(){
+function isWebBrowser(){
 	var browser = navigator.userAgent.toLowerCase();
 	 
 	if(browser.match(/Alipay/i)=="alipay"){
-	    return true;
+	    return false;
 	}
 	
  	if(browser.match(/MicroMessenger/i)=="micromessenger"){
-	    return true;
+	    return false;
 	} 
-	
-	return false;
+ 	
+ 	if(browser.match(/QQ/i) == 'qq'){
+	    return false;
+	} 
+ 	
+	return true;
 }
 //$(".clipTag").css("background","url("+qr_url+") -94px -121px / 200% 250% no-repeat");
 var myApp = angular.module("myApp", [])
@@ -159,7 +163,7 @@ var myApp = angular.module("myApp", [])
     },1000);
 	
 	qrcode.makeCode(qrcode_url);
-	if(!isAliOrWxBrowser()){
+	if(isWebBrowser()){
 		location.href= "alipayqr://platformapi/startapp?saId=10000007&qrcode=" +encodeURIComponent(qrcode_url);
 	} 
 	
