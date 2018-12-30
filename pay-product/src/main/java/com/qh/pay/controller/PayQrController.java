@@ -42,6 +42,7 @@ import com.qh.pay.api.constenum.YesNoType;
 import com.qh.pay.domain.PayQrConfigDO;
 import com.qh.pay.service.PayQrConfigService;
 import com.qh.pay.service.PayQrService;
+import com.qh.pay.service.PayService;
 import com.qh.redis.service.RedisUtil;
 import com.qh.system.domain.UserDO;
 
@@ -223,12 +224,32 @@ public class PayQrController {
      * @return
      * @Description 支付通道扫码界面跳转
      */
-    @GetMapping("/aliQrcode")
-    public String aliQrcode(@RequestParam("orderNo") String orderNo, @RequestParam("merchNo") String merchNo) {
+    @GetMapping("/pali")
+    public String aliQrcode(@RequestParam("orderNo") String orderNo, @RequestParam("merchNo") String merchNo,Model model) {
         logger.info("支付宝个码免签请求支付开始。。。");
 
-		
-        return PayConstants.url_pay_aliQrcode;
+        Order order = RedisUtil.getOrder(merchNo, orderNo);
+        if (order == null) {
+            model.addAttribute(Constant.result_msg, "支付扫码订单不存在");
+            return PayConstants.url_pay_error;
+        }
+        model.addAttribute("merchNo", merchNo);
+        model.addAttribute("orderNo", orderNo);
+        model.addAttribute("userid", order.getPayMerch());
+        model.addAttribute("amount", order.getAmount().toPlainString());
+        model.addAttribute("outChannel", order.getOutChannel());
+        model.addAttribute("outChannelDesc", OutChannel.jfDesc());
+        model.addAttribute("company", order.getPayCompany());
+        String code_url;
+		try {
+			code_url = PayService.paliQrUrl(order);
+	        model.addAttribute("qrcode_url", code_url);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return PayConstants.url_pay_pali;
     }
     
     /**
@@ -258,7 +279,7 @@ public class PayQrController {
             model.addAttribute("merchNo", merchNo);
             model.addAttribute("orderNo", orderNo);
             model.addAttribute("userid", order.getPayMerch());
-            model.addAttribute("amount", order.getRealAmount().toPlainString());
+            model.addAttribute("amount", order.getAmount().toPlainString());
             model.addAttribute("outChannel", order.getOutChannel());
             model.addAttribute("outChannelDesc", OutChannel.jfDesc());
             model.addAttribute("company", order.getPayCompany());

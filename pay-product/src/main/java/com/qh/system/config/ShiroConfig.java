@@ -96,6 +96,8 @@ public class ShiroConfig {
 		filterChainDefinitionMap.put("/pay/card/**", anon);
 		filterChainDefinitionMap.put("/pay/qr", anon);
 		filterChainDefinitionMap.put("/pay/qr/**", anon);
+		filterChainDefinitionMap.put("/pay/pali", anon);
+		filterChainDefinitionMap.put("/pay/pali/**", anon);
 		filterChainDefinitionMap.put("/pay/notify/**", anon);
 		filterChainDefinitionMap.put("/pay/order/**", anon);
 		filterChainDefinitionMap.put("/**", authc);

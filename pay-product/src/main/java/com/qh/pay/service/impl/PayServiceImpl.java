@@ -764,8 +764,15 @@ public class PayServiceImpl implements PayService {
 			logger.info("未找到商户结算费率{},{},{}",merchant.getMerchantsName(),paymentMethod,rate);
 		}
 		Map<String,Object> rateMap = new HashMap<>(rate.get(order.getOutChannel()));
-		jfRate = new BigDecimal(rateMap.get(PayConstants.PAYMENT_RATE).toString());
-		jfUnit = Integer.valueOf(rateMap.get(PayConstants.PAYMENT_UNIT).toString());
+		Object jfRateObject = rateMap.get(PayConstants.PAYMENT_RATE);
+		if (ParamUtil.isNotEmpty(jfRateObject)) {
+			jfRate = new BigDecimal(jfRateObject.toString());
+		}
+		
+		Object jfUnitObject = rateMap.get(PayConstants.PAYMENT_UNIT);
+		if (ParamUtil.isNotEmpty(jfUnitObject)) {
+			jfUnit = Integer.valueOf(jfUnitObject.toString());
+		}
 		
 		order.setPaymentMethod(paymentMethod);
 		/*if(merchant.getHandRate() != null && (jfRate=merchant.getHandRate().get(order.getOutChannel())) != null){

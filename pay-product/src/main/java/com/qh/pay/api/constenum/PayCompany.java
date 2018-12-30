@@ -49,7 +49,9 @@ public enum PayCompany {
 	/**威富通**/
 	wft,
 	/* 通联 */
-	allipay
+	allipay,
+	/* 个人支付宝 */
+	palipay
 	;
 	private static final Map<String,String> descMap = new HashMap<>(10);
 	
@@ -58,6 +60,9 @@ public enum PayCompany {
 	static{
 		descMap.put(ysb.name(), "银生宝");
 		enumMap.put(ysb.name(), ysb);
+		
+		descMap.put(jf.name(), Constant.pay_name);
+		enumMap.put(jf.name(), jf);
 		
 		descMap.put(tfb.name(), "天付宝");
 		enumMap.put(tfb.name(), tfb);
@@ -109,6 +114,9 @@ public enum PayCompany {
 		
 		descMap.put(allipay.name(), "通联");
 		enumMap.put(allipay.name(), allipay);
+
+		descMap.put(palipay.name(), "个人支付宝");
+		enumMap.put(palipay.name(), palipay);
 	}
 	
 	/***当前支付公司*******/
