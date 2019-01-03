@@ -100,7 +100,7 @@ public class PersonAlipayService {
 			return R.error(errorMsg);
 		}
 
-		if (!order.getAmount().equals(new BigDecimal(money))) {
+		if (order.getAmount().compareTo(new BigDecimal(money)) != 0) {
 			String errorMsg = "个人支付宝异步通知金额有误！";
 			logger.error(errorMsg + ";订单金额="+order.getAmount()+";支付金额="+money);
 			return R.error(errorMsg);		
