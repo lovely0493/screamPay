@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.qh.common.config.CfgKeyConst;
+import com.alibaba.fastjson.JSONObject;
 import com.qh.common.utils.R;
 import com.qh.pay.api.Order;
 import com.qh.pay.api.PayConstants;
@@ -68,7 +68,7 @@ public class PersonAlipayService {
 	 * @param request
 	 * @return
 	 */
-	public R notify(Order order, HttpServletRequest request) {
+	public R notify(Order order, HttpServletRequest request, String requestBody) {
 		logger.info("个人支付宝 异步通知开始-------------------------------------------------");
 		/* 回调格式  http://域名/pay/notify/palipay/{merchNo}/{orderNo}
 		 * 回调方法：支持GET/POST
@@ -76,9 +76,10 @@ public class PersonAlipayService {
 		 * sign = MD5(money=xx&time=xx&key=xx)
 		 * 参考下面的验签过程
 		 *  */
-		String money = request.getParameter("money");
-		String time = request.getParameter("time");
-		String sign = request.getParameter("sign");
+		JSONObject jsonParam = JSONObject.parseObject(requestBody);
+		String money = jsonParam.getString("money");
+		String time = jsonParam.getString("time");
+		String sign = jsonParam.getString("sign");
 		
 		if (ParamUtil.isEmpty(money) || ParamUtil.isEmpty(sign)) {
 			String errorMsg = "回调缺少必要参数";

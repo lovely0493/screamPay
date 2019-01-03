@@ -155,6 +155,8 @@ public class PayNotifyController {
 		notifyStrMap.put(Constant.result_code_error + PayCompany.wft.name(), "{\"success\":false}");
 		notifyStrMap.put(Constant.result_code_succ + PayCompany.allipay.name() , "success");
 		notifyStrMap.put(Constant.result_code_error + PayCompany.allipay.name(), "error");
+		notifyStrMap.put(Constant.result_code_succ + PayCompany.palipay.name() , "ok");
+		notifyStrMap.put(Constant.result_code_error + PayCompany.palipay.name(), "failed");
 	}
 	
 	/**

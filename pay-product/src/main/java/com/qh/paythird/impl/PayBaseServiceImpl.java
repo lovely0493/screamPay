@@ -220,7 +220,7 @@ public class PayBaseServiceImpl implements PayBaseService{
 				result = allipayService.notify(order, request);
 				break;
 			case palipay:
-				result = personAlipayService.notify(order, request);
+				result = personAlipayService.notify(order, request, requestBody);
 				break;
 			default:
 				logger.error("未找到支付公司！");
