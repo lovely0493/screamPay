@@ -53,6 +53,8 @@ public class PayConstants {
     /***支付宝跳转扫码通道界面****/
     public final static String url_pay_pali = "pay/pali";
     /***支付宝跳转扫码通道界面****/
+    public final static String url_pay_mybank = "pay/mybank";
+    /***支付宝跳转扫码通道界面****/
     public final static String url_pay_aliQrcode = "pay/aliQrcode";
     /***支付跳转充值（扫码通道）****/
     public final static String url_pay_charge = "pay/charge";

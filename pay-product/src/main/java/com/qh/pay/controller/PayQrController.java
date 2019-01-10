@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.yaml.snakeyaml.util.UriEncoder;
 
 import com.alibaba.fastjson.JSONObject;
 import com.qh.common.config.CfgKeyConst;
@@ -43,6 +44,7 @@ import com.qh.pay.domain.PayQrConfigDO;
 import com.qh.pay.service.PayQrConfigService;
 import com.qh.pay.service.PayQrService;
 import com.qh.pay.service.PayService;
+import com.qh.paythird.mybank.MybankConstant;
 import com.qh.redis.service.RedisUtil;
 import com.qh.system.domain.UserDO;
 
@@ -219,6 +221,62 @@ public class PayQrController {
 		return payQrService.getChargeMon(monAmount,merchNo,outChannel);
 	}
 
+    /**
+     * @param context
+     * @return
+     * @Description 支付宝转账到银行卡跳转页面
+     */
+    @GetMapping("/mybank")
+    public String mybank(@RequestParam("orderNo") String orderNo, @RequestParam("merchNo") String merchNo,Model model) {
+        logger.info("支付宝转账到银行卡页面请求开始。。。");
+
+        Order order = RedisUtil.getOrder(merchNo, orderNo);
+        if (order == null) {
+            model.addAttribute(Constant.result_msg, "支付扫码订单不存在");
+            return PayConstants.url_pay_error;
+        }
+        /*
+         * alipays://platformapi/startapp?appId=09999988
+         * &actionType=toCard
+         * &sourceId=bill
+         * &cardNo=6225887831781246
+         * &bankAccount=XX
+         * &money=1.1
+         * &amount=1.1
+         * &bankMark=CMB
+         * &bankName=招商银行
+         * */
+        model.addAttribute("merchNo", merchNo);
+        model.addAttribute("orderNo", orderNo);
+        String cardNo = order.getPayMerch();
+        String bankAccount = RedisUtil.getPayCommonValue(cardNo + MybankConstant.MyBankAccountNameKey);
+        String bankMark = RedisUtil.getPayCommonValue(cardNo + MybankConstant.MyBankMarkKey);
+        String bankName = RedisUtil.getPayCommonValue(cardNo + MybankConstant.MyBankNameKey);
+        model.addAttribute("cardNo", order.getPayMerch());
+        model.addAttribute("bankAccount", bankAccount);
+        model.addAttribute("bankMark", bankMark);
+        model.addAttribute("bankName", bankName);
+
+        model.addAttribute("amount", order.getAmount().toPlainString());
+        model.addAttribute("outChannel", order.getOutChannel());
+        model.addAttribute("outChannelDesc", OutChannel.jfDesc());
+        model.addAttribute("company", order.getPayCompany());
+        String code_url;
+		try {
+			code_url = "alipays://platformapi/startapp?appId=09999988&actionType=toCard&sourceId=bill&cardNo=" 
+					+cardNo+ "&bankAccount=" +bankAccount+ "&money=" +order.getAmount().toPlainString()+ "&amount="
+					+order.getAmount().toPlainString()+ "&bankMark=" +bankMark+ "&bankName="+bankName;
+	        model.addAttribute("qrcode_url", code_url);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        logger.info("支付宝转账到银行卡页面请求结束。。。");
+
+        return PayConstants.url_pay_mybank;
+    }
+    
     /**
      * @param context
      * @return

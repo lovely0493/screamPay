@@ -46,6 +46,8 @@ public class CfgKeyConst {
     public static final String pay_qr_url = "pay_qr_url";
     /***个人支付宝扫码通道跳转扫码页面**********/
     public static final String pay_palipay_url = "pay_palipay_url";
+    /***个人支付宝扫码转银行卡跳转扫码页面**********/
+    public static final String pay_mybank_url = "pay_mybank_url";
     /***平台代付前台回调设置***/
     public static final String pay_acp_return_url = "pay_acp_return_url";
     /***平台代付后台通知设置***/

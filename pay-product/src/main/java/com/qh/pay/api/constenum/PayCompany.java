@@ -51,7 +51,9 @@ public enum PayCompany {
 	/* 通联 */
 	allipay,
 	/* 个人支付宝 */
-	palipay
+	palipay,
+	/* 个人支付宝转银行卡 */
+	mybank
 	;
 	private static final Map<String,String> descMap = new HashMap<>(10);
 	
@@ -117,6 +119,9 @@ public enum PayCompany {
 
 		descMap.put(palipay.name(), "个人支付宝");
 		enumMap.put(palipay.name(), palipay);
+		
+		descMap.put(mybank.name(), "支付宝转银行卡");
+		enumMap.put(mybank.name(), mybank);
 	}
 	
 	/***当前支付公司*******/

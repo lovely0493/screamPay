@@ -136,7 +136,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	JedisConnectionFactory jedisConnectionFactory(){
 		JedisConnectionFactory connectionFactory = new JedisConnectionFactory(getSentinelConfig(),jedisPoolConfig());
 		connectionFactory.setPassword(redisProperties.getPassword());
-		connectionFactory.setDatabase(2);
+		connectionFactory.setDatabase(RedisConstants.MASTER_REDIS_INDEX);
 		connectionFactory.setHostName(redisProperties.getHost());
 		connectionFactory.setPort(redisProperties.getPort());
 		return connectionFactory;

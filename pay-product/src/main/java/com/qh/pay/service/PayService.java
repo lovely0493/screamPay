@@ -279,6 +279,16 @@ public interface PayService {
 	 * @param order
 	 * @return
 	 */
+	public static String mybankQrUrl(Order order) throws Exception{
+		return RedisUtil.getSysConfigValue(CfgKeyConst.pay_domain) + RedisUtil.getSysConfigValue(CfgKeyConst.pay_mybank_url) + 
+				"?merchNo=" + order.getMerchNo() +"&orderNo="  +	order.getOrderNo();
+	}
+	
+	/**
+	 * @Description 支付扫码跳转地址
+	 * @param order
+	 * @return
+	 */
 	public static String paliQrUrl(Order order) throws Exception{
 		return RedisUtil.getSysConfigValue(CfgKeyConst.pay_domain) + RedisUtil.getSysConfigValue(CfgKeyConst.pay_palipay_url) + 
 				"?merchNo=" + order.getMerchNo() +"&orderNo="  +	order.getOrderNo();

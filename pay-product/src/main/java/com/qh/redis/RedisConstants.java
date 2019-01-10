@@ -10,6 +10,11 @@ import java.util.Map;
  * @date 2017年10月25日 下午9:11:21
  */
 public class RedisConstants {
+	/** JEDIS默认槽 **/
+	public static final int  MASTER_REDIS_INDEX = 2;
+	
+	/** JEDIS 哨兵默认槽 **/
+	public static final int  SENTINEL_REDIS_INDEX = 1;
 	
     /** 默认超时时间（毫秒）  */  
     public static final long DEFAULT_TIME_OUT = 1000; 
