@@ -141,7 +141,9 @@ var myApp = angular.module("myApp", [])
 	
 	qrcode.makeCode(qrcode_url);
 	if(isWebBrowser()){
-		location.href= "alipayqr://platformapi/startapp?saId=10000007&qrcode=" +encodeURIComponent(qrcode_url);
+		var aliOpenUrl = "https://render.alipay.com/p/s/i?scheme="+encodeURIComponent("alipays://platformapi/startapp?appId=10000007&actionType=route&_-_-bundleId_-_-=&schemeInnerSource=10000007&useScan=camera&qrcode=" +qrcode_url);
+
+		location.href= aliOpenUrl;
 	} 
 	
 });
