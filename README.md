@@ -42,39 +42,39 @@ V1.0.0 |2018-12-08 |首次发布
 
 【运营平台截图】
 
-![支付通道管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.32.02.png "screamPay运营平台")
+![支付通道管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.32.02.png "screamPay运营平台")
 
-![下发通道管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.32.38.png "screamPay运营平台")
+![下发通道管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.32.38.png "screamPay运营平台")
 
-![代理商管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.33.14.png  "screamPay运营平台")
+![代理商管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.33.14.png  "screamPay运营平台")
 
-![添加代理商](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.33.46.png "screamPay运营平台")
+![添加代理商](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.33.46.png "screamPay运营平台")
 
-![商户管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.34.29.png  "screamPay运营平台")
+![商户管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.34.29.png  "screamPay运营平台")
 
-![新增商户管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.34.52.png  "screamPay运营平台")
+![新增商户管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.34.52.png  "screamPay运营平台")
 
-![支付交易查询](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.13.png  "screamPay运营平台")
+![支付交易查询](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.13.png  "screamPay运营平台")
 
-![代付交易查询](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.26.png  "screamPay运营平台")
+![代付交易查询](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.26.png  "screamPay运营平台")
 
-![提现交易查询](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.41.png  "screamPay运营平台")
+![提现交易查询](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.41.png  "screamPay运营平台")
 
-![商户钱包管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.58.png  "screamPay运营平台")
+![商户钱包管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.35.58.png  "screamPay运营平台")
 
-![代理商钱包管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.12.png  "screamPay运营平台")
+![代理商钱包管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.12.png  "screamPay运营平台")
 
-![平台钱包管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.20.png  "screamPay运营平台")
+![平台钱包管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.20.png  "screamPay运营平台")
 
-![第三方账户钱包管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.38.png  "screamPay运营平台")
+![第三方账户钱包管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.38.png  "screamPay运营平台")
 
-![提现管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.52.png "screamPay运营平台")
+![提现管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.36.52.png "screamPay运营平台")
 
-![提现列表](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.37.03.png  "screamPay运营平台")
+![提现列表](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.37.03.png  "screamPay运营平台")
 
-![支付订单同步管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.37.17.png "screamPay运营平台")
+![支付订单同步管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.37.17.png "screamPay运营平台")
 
-![代付订单同步管理](http://star.agcde.xyz/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.37.38.png "screamPay运营平台")
+![代付订单同步管理](http://gongdingxi.cn/wp-content/uploads/2018/12/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7-2018-12-08-%E4%B8%8B%E5%8D%883.37.38.png "screamPay运营平台")
 
 
 ### 项目结构
