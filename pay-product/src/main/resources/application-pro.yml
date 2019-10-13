@@ -4,15 +4,15 @@ logging:
 spring:
   read-dataSource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:33068/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
+    url: jdbc:mysql://103.94.103.104:3303/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
     username: root
-    password: 123456
+    password: liuliu66
   dataSource:
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:33068/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
+    url: jdbc:mysql://103.94.103.104:3303/pay_juhe?useUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
     username: root
-    password: 123456
+    password: liuliu66
     initialSize: 1
     minIdle: 3
     maxActive: 20
