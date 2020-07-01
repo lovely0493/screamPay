@@ -17,7 +17,7 @@
 		<java.version>1.8</java.version>
 		<start-class>com.qh.PayProductApplication</start-class>
 		<pagehelper.version>1.2.3</pagehelper.version>
-		<quartz.version>2.3.0</quartz.version>
+		<quartz.version>2.3.2</quartz.version>
 		<shiro.version>1.4.0</shiro.version>
 		<commons-io.version>2.6</commons-io.version>
 		<commons-configuration.version>1.10</commons-configuration.version>
